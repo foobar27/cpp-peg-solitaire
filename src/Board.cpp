@@ -27,7 +27,6 @@ namespace pegsolitaire {
     , checkMask1(size, 0)
     , checkMask2(size, 0)
   {
-    assert(size < 64);
   }
 
 }
