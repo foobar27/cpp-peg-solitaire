@@ -104,12 +104,14 @@ BOOST_AUTO_TEST_CASE(BoardBuilder_test) {
   BOOST_CHECK_EQUAL(builder.decode(CompactBoard(builder.population(), 6)),
                     expected);
 
-  // try to decode/encode every possible field
+  // decode/encode-cycle for every possible field
   int numberOfPossibleFields = 1 << builder.population();
   for (int i = 0; i < numberOfPossibleFields; ++i) {
     CompactBoard board(builder.population(), i);
     BOOST_CHECK_EQUAL(board, builder.encode(builder.decode(board)));
   }
 
-  // TODO perform more tests!!!
+  // TODO test isValidTransformation (only vflip and some combined?) with/without some OCCUPIED
+
+  // TODO test the masks!!!
 }

@@ -49,7 +49,7 @@ namespace pegsolitaire {
     for (; fieldIt != fields.data().end(); ++fieldIt, ++resultIt)
       if (*fieldIt)
         *resultIt = pos--;
-    assert(pos == 0);
+    assert(pos == -1);
     return result;
   }
 
@@ -77,7 +77,7 @@ namespace pegsolitaire {
   }
 
   Symmetry compose(const initializer_list<Symmetry> & _fs) {
-    assert(_fs.size() == 0);
+    assert(_fs.size() != 0);
     vector<Symmetry> fs = _fs;
     reverse(fs.begin(), fs.end());
     auto it = fs.begin();
@@ -137,11 +137,13 @@ namespace pegsolitaire {
     int nCols = m_lookupTable.numberOfColumns();
     CompactBoard result(m_population, 0);
     auto lookupIt = m_lookupTable.data().begin();
+    auto inputIt = input.data().begin();
     for (int r = 0; r < nRows; ++r)
       for (int c = 0; c < nCols; ++c) {
         if (*lookupIt >= 0)
-          result[*lookupIt] = true;
+          result[*lookupIt] = (*inputIt == Field::OCCUPIED);
         ++lookupIt;
+        ++inputIt;
       }
     return result;
   }
@@ -157,9 +159,7 @@ namespace pegsolitaire {
     for (int r = 0; r < nRows; ++r)
       for (int c = 0; c < nCols; ++c) {
         int v = *lookupIt;
-        if (v == -1)
-          *resultIt = Field::BLOCKED;
-        else
+        if (v >= 0) // default value for result is Field::BLOCKED
           *resultIt = input[v] ? Field::OCCUPIED : Field::EMPTY;
         ++lookupIt;
         ++resultIt;
@@ -190,38 +190,45 @@ namespace pegsolitaire {
       auto l1 = lookupTable(p1);
       auto l2 = lookupTable(p2);
       auto l3 = lookupTable(p3);
-      assert(l1>=0);
-      assert(l2>=0);
-      assert(l3>=0);
+      assert(0 <= l1);
+      assert(l1 < population);
+      assert(0 <= l2);
+      assert(l2 < population);
+      assert(0 <= l3);
+      assert(l3 < population);
 
       masks.moveMask[l1] = true;
       masks.moveMask[l2] = true;
       masks.moveMask[l3] = true;
 
       masks.checkMask1[l1] = true;
-      masks.checkMask2[l2] = true;
+      masks.checkMask1[l2] = true;
 
       masks.checkMask2[l2] = true;
       masks.checkMask2[l3] = true;
       result.push_back(move(masks));
     };
 
+    auto lookupTableIt = lookupTable.data().begin();
+
     const auto isValid = [&board, &lookupTable, nRows, nCols](const Coordinates & coord) {
       return coord.first >= 0 && coord.second >= 0
-      && coord.first < nRows && coord.second < nCols;
+      && coord.first < nRows && coord.second < nCols
+      && lookupTable(coord) >= 0;
     };
 
-    auto lookupTableIt = lookupTable.data().begin();
     for (int r = 0; r < nRows; ++r)
       for (int c = 0; c < nCols; ++c) {
         Coordinates coord = Coordinates(r, c);
-        if (*lookupTableIt)
+        if (*lookupTableIt >= 0) {
+          assert(isValid(coord));
           for (auto dir : moveDirections) {
             auto n1 = applyCanonicalMove(coord, dir);
             auto n2 = applyCanonicalMove(n1, dir);
             if (isValid(n1) && isValid(n2))
               addMove(coord, n1, n2);
           }
+        }
         ++lookupTableIt;
       }
 #ifndef NDEBUG

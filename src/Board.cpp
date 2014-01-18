@@ -23,9 +23,9 @@ namespace pegsolitaire {
   }
 
   Masks::Masks(int size)
-    : moveMask(false)
-    , checkMask1(false)
-    , checkMask2(false)
+    : moveMask(size, 0)
+    , checkMask1(size, 0)
+    , checkMask2(size, 0)
   {
     assert(size < 64);
   }

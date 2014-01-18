@@ -56,7 +56,6 @@ namespace pegsolitaire {
       return operator()(coord.first, coord.second);
     }
 
-
     const_reference operator()(const std::pair<int, int> & coord) const {
       return operator()(coord.first, coord.second);
     }
