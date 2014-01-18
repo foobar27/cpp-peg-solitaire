@@ -89,12 +89,12 @@ namespace pegsolitaire {
     return Coordinates(p.first, bounds.second - p.second);
   }
 
-  auto hflip = compose({transpose, vflip, transpose});
-  auto rotate90 = compose({vflip, transpose});
-  auto rotate180 = compose({vflip, hflip});
-  auto rotate270 = compose({hflip, transpose});
-  auto vflip_rotate90 = compose({vflip, rotate90});
-  auto hflip_rotate90 = compose({hflip, rotate90});
+  Symmetry hflip = compose({transpose, vflip, transpose});
+  Symmetry rotate90 = compose({vflip, transpose});
+  Symmetry rotate180 = compose({vflip, hflip});
+  Symmetry rotate270 = compose({hflip, transpose});
+  Symmetry vflip_rotate90 = compose({vflip, rotate90});
+  Symmetry hflip_rotate90 = compose({hflip, rotate90});
 
   const vector<function<Coordinates(const Coordinates&, const Coordinates &)>> symmetries =
   {
