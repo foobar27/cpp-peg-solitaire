@@ -23,8 +23,9 @@ target_link_libraries(peg-solitaire PegSolitaire)
 
 if (PEGSOLITAIRE_USE_LLVM)
   # TODO integrate the following experiments into the main project
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LLVM_CPPFLAGS}")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LLVM_LDFLAGS}")
   add_executable(llvm-experiments LlvmExperiments.cpp)
   target_link_libraries(llvm-experiments ${LLVM_ALL_LIBS})
+  set_target_properties(llvm-experiments PROPERTIES
+    COMPILE_FLAGS ${LLVM_CPPFLAGS}
+    LINK_FLAGS ${LLVM_LDFLAGS})
 endif ()

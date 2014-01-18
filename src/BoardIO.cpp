@@ -57,7 +57,7 @@ namespace pegsolitaire {
       if (!l.empty()) {
         if (lineLength < 0)
           lineLength = l.size();
-        if (l.size() != lineLength)
+        if (l.size() != static_cast<size_t>(lineLength))
           throw ParseException(lineNumber, line.length() - 1, "all lines must have equal length!");
         parsed.push_back(l);
       }

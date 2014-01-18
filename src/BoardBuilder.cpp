@@ -9,7 +9,7 @@ namespace pegsolitaire {
   int populationCount(const boost::dynamic_bitset<> & v) {
     // TODO optimize
     int count = 0;
-    for (int i=0; i<v.size(); ++i) {
+    for (size_t i=0; i<v.size(); ++i) {
       if (v[i])
         ++count;
     }
@@ -65,7 +65,7 @@ namespace pegsolitaire {
   }
 
   Symmetry compose(const initializer_list<Symmetry> & _fs) {
-    assert(fs.size() == 0);
+    assert(_fs.size() == 0);
     vector<Symmetry> fs = _fs;
     reverse(fs.begin(), fs.end());
     auto it = fs.begin();
@@ -146,7 +146,7 @@ namespace pegsolitaire {
       assert(l1>=0);
       assert(l2>=0);
       assert(l3>=0);
-      cout << "l1=" << l1 << " l2=" << l2 << " l3=" << l3 << " NDEBUG=" << NDEBUG << endl;
+
       masks.moveMask[l1] = true;
       masks.moveMask[l2] = true;
       masks.moveMask[l3] = true;
