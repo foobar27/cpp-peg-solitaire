@@ -101,14 +101,14 @@ namespace pegsolitaire {
     return Coordinates(p.first, bounds.second - p.second);
   }
 
-  Symmetry hflip = compose({transpose, vflip, transpose});
-  Symmetry rotate90 = compose({vflip, transpose});
-  Symmetry rotate180 = compose({vflip, hflip});
-  Symmetry rotate270 = compose({hflip, transpose});
-  Symmetry vflip_rotate90 = compose({vflip, rotate90});
-  Symmetry hflip_rotate90 = compose({hflip, rotate90});
+  const Symmetry hflip = compose({transpose, vflip, transpose});
+  const Symmetry rotate90 = compose({vflip, transpose});
+  const Symmetry rotate180 = compose({vflip, hflip});
+  const Symmetry rotate270 = compose({hflip, transpose});
+  const Symmetry vflip_rotate90 = compose({vflip, rotate90});
+  const Symmetry hflip_rotate90 = compose({hflip, rotate90});
 
-  const vector<function<Coordinates(const Coordinates&, const Coordinates &)>> symmetries =
+  const vector<Symmetry> allSymmetries =
   {
     vflip,
     hflip,
@@ -132,7 +132,7 @@ namespace pegsolitaire {
     return true;
   }
 
-  CompactBoard BoardBuilder::encode(const Matrix<Field> & input) {
+  CompactBoard BoardBuilder::encode(const Matrix<Field> & input) const {
     int nRows = m_lookupTable.numberOfRows();
     int nCols = m_lookupTable.numberOfColumns();
     CompactBoard result(m_population, 0);
@@ -148,7 +148,7 @@ namespace pegsolitaire {
     return result;
   }
 
-  Matrix<Field> BoardBuilder::decode(const CompactBoard & input) {
+  Matrix<Field> BoardBuilder::decode(const CompactBoard & input) const {
     int nRows = m_lookupTable.numberOfRows();
     int nCols = m_lookupTable.numberOfColumns();
     Matrix<Field> result(m_lookupTable.numberOfRows(),
@@ -168,11 +168,18 @@ namespace pegsolitaire {
   }
 
   bool BoardBuilder::isTransformationValid(const Symmetry & s) const {
-    if (!haveEqualShape(m_lookupTable, transform(m_lookupTable, s)))
+    if (!haveEqualShape(m_lookupTable, transform(m_lookupTable, s, 0)))
       return false;
-    auto bounds = make_pair(m_lookupTable.numberOfRows() - 1, m_lookupTable.numberOfColumns());
-    for (const auto & m : m_moveMasks) {
-      // TODO verify moveMask transformation tests!
+    for (const auto & m : m_masks) {
+      auto transformed = encode(transform(decode(m.moveMask), s, Field::OCCUPIED));
+      bool found = false;
+      for (const auto & x : m_masks)
+        if (x.moveMask == transformed) {
+          found = true;
+          break;
+        }
+      if (!found)
+        return false; // symmetry broken
     }
     return true;
   }
@@ -250,6 +257,7 @@ namespace pegsolitaire {
     , m_population(populationCount(fields))
     , m_fields(fields)
     , m_lookupTable(buildLookupTable(m_fields))
+    , m_masks(buildMoveMasks(fields, m_lookupTable, moveDirections))
   {}
 
   BoardBuilder::BoardBuilder(const vector<MoveDirection> & moveDirections, const Matrix<bool> && fields)

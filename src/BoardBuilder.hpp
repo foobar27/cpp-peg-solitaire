@@ -17,10 +17,10 @@ namespace pegsolitaire {
     BoardBuilder(const std::vector<MoveDirection> & moveDirections, const Matrix<bool> & fields);
     BoardBuilder(const std::vector<MoveDirection> & moveDirections, const Matrix<bool> && fields);
 
-    CompactBoard encode(const Matrix<Field> &);
-    Matrix<Field> decode(const CompactBoard & input);
+    CompactBoard encode(const Matrix<Field> &) const;
+    Matrix<Field> decode(const CompactBoard & input) const;
 
-    int population() { return m_population; }
+    int population() const { return m_population; }
 
     bool isTransformationValid(const Symmetry &) const;
 
@@ -30,7 +30,7 @@ namespace pegsolitaire {
     int m_population;
     Matrix<bool> m_fields;
     Matrix<int> m_lookupTable;
-    std::vector<Masks> m_moveMasks;
+    std::vector<Masks> m_masks;
   };
 
 }

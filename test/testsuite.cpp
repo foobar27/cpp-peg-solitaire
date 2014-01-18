@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 using namespace std;
 using namespace pegsolitaire;
@@ -60,7 +61,7 @@ Matrix<int> intMatrix(initializer_list<initializer_list<int>> input) {
 }
 
 void verifySymmetry(const Matrix<int> & m, const Symmetry & f, initializer_list<initializer_list<int>> expected) {
-  BOOST_CHECK_EQUAL(transform(m, f), intMatrix(expected));
+  BOOST_CHECK_EQUAL(transform(m, f, 0), intMatrix(expected));
 }
 
 BOOST_AUTO_TEST_CASE(symmetriesTest) {
@@ -111,7 +112,10 @@ BOOST_AUTO_TEST_CASE(BoardBuilder_test) {
     BOOST_CHECK_EQUAL(board, builder.encode(builder.decode(board)));
   }
 
-  // TODO test isValidTransformation (only vflip and some combined?) with/without some OCCUPIED
+  int n = count_if(allSymmetries.begin(),
+                   allSymmetries.end(),
+                   bind(&BoardBuilder::isTransformationValid, &builder, std::placeholders::_1));
+  BOOST_CHECK_EQUAL(n, 1 ); // only vflip
 
-  // TODO test the masks!!!
+  // TODO further consistency tests
 }
