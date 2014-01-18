@@ -7,7 +7,6 @@
 #include <stdexcept>
 #include <boost/dynamic_bitset.hpp>
 #include "Matrix.hpp"
-#include "CompactBoardPattern.hpp"
 
 namespace pegsolitaire {
 
