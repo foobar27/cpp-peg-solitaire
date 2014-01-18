@@ -40,11 +40,11 @@ Matrix<bool> asymmetricField {vector<vector<bool>> {
 
 BOOST_AUTO_TEST_CASE(parseLinesTest) {
   vector<string> lines = {
-    "oo.oo",
-    "o...o",
-    ".....",
-    "   o.o.o",
-    "oo.oo",
+    "..o..",
+    ".ooo.",
+    "ooooo",
+    "   .o.o.",
+    "..o..",
   };
   auto expected = asymmetricField;
   Matrix<bool> m = parseLines(lines);

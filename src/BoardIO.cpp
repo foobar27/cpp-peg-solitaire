@@ -10,7 +10,7 @@ namespace pegsolitaire {
 
   using namespace std;
 
-  enum class Field : char { BLOCKED = 'o', EMPTY = '.', PEG };
+  enum class Field : char { BLOCKED = '.', EMPTY = 'o', PEG };
 
   locale loc;
 
