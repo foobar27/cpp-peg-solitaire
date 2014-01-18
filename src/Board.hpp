@@ -10,6 +10,8 @@
 
 namespace pegsolitaire {
 
+  using CompactBoard = boost::dynamic_bitset<>;
+
   class PEGSOLITAIRE_EXPORT ParseException : public std::runtime_error {
   public:
     ParseException(int row, int column, const std::string & message);
@@ -29,7 +31,7 @@ namespace pegsolitaire {
    * (_,_,m) => ...011... (checkmask2)
    */
   struct PEGSOLITAIRE_EXPORT Masks {
-    boost::dynamic_bitset<> moveMask, checkMask1, checkMask2;
+    CompactBoard moveMask, checkMask1, checkMask2;
     Masks(int size);
   };
 

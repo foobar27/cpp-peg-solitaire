@@ -6,8 +6,20 @@ namespace pegsolitaire {
 
   using namespace std;
 
-  int populationCount(const boost::dynamic_bitset<> & v) {
-    // TODO optimize
+  ostream& operator<<(ostream& os, Field field) {
+    switch (field) {
+    case Field::OCCUPIED: os << "OCCUPIED";
+      break;
+    case Field::EMPTY: os << "EMPTY";
+      break;
+    case Field::BLOCKED: os << "BLOCKED";
+      break;
+    }
+    return os;
+  }
+
+
+  int populationCount(const CompactBoard & v) {
     int count = 0;
     for (size_t i=0; i<v.size(); ++i) {
       if (v[i])
@@ -120,6 +132,41 @@ namespace pegsolitaire {
     return true;
   }
 
+  CompactBoard BoardBuilder::encode(const Matrix<Field> & input) {
+    int nRows = m_lookupTable.numberOfRows();
+    int nCols = m_lookupTable.numberOfColumns();
+    CompactBoard result(m_population, 0);
+    auto lookupIt = m_lookupTable.data().begin();
+    for (int r = 0; r < nRows; ++r)
+      for (int c = 0; c < nCols; ++c) {
+        if (*lookupIt >= 0)
+          result[*lookupIt] = true;
+        ++lookupIt;
+      }
+    return result;
+  }
+
+  Matrix<Field> BoardBuilder::decode(const CompactBoard & input) {
+    int nRows = m_lookupTable.numberOfRows();
+    int nCols = m_lookupTable.numberOfColumns();
+    Matrix<Field> result(m_lookupTable.numberOfRows(),
+                         m_lookupTable.numberOfColumns(),
+                         Field::BLOCKED);
+    auto lookupIt = m_lookupTable.data().begin();
+    auto resultIt = result.data().begin();
+    for (int r = 0; r < nRows; ++r)
+      for (int c = 0; c < nCols; ++c) {
+        int v = *lookupIt;
+        if (v == -1)
+          *resultIt = Field::BLOCKED;
+        else
+          *resultIt = input[v] ? Field::OCCUPIED : Field::EMPTY;
+        ++lookupIt;
+        ++resultIt;
+      }
+    return result;
+  }
+
   bool BoardBuilder::isTransformationValid(const Symmetry & s) const {
     if (!haveEqualShape(m_lookupTable, transform(m_lookupTable, s)))
       return false;
@@ -193,6 +240,7 @@ namespace pegsolitaire {
 
   BoardBuilder::BoardBuilder(const vector<MoveDirection> & moveDirections, const Matrix<bool> & fields)
     : m_moveDirections(moveDirections)
+    , m_population(populationCount(fields))
     , m_fields(fields)
     , m_lookupTable(buildLookupTable(m_fields))
   {}

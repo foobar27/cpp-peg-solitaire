@@ -92,5 +92,24 @@ BOOST_AUTO_TEST_CASE(moveMasksTest) {
 
 BOOST_AUTO_TEST_CASE(BoardBuilder_test) {
   BoardBuilder builder(allDirections, asymmetricField);
-  // TODO perform tests!!!
+
+  // decode some known value of a board
+  Matrix<Field> expected(vector<vector<Field>> {
+      { Field::BLOCKED,  Field::BLOCKED,  Field::EMPTY,    Field::BLOCKED,  Field::BLOCKED}
+      ,{Field::BLOCKED,  Field::EMPTY,    Field::EMPTY,    Field::EMPTY,    Field::BLOCKED}
+      ,{Field::EMPTY,    Field::EMPTY,    Field::EMPTY,    Field::EMPTY,    Field::EMPTY  }
+      ,{Field::BLOCKED,  Field::OCCUPIED, Field::BLOCKED,  Field::OCCUPIED, Field::BLOCKED}
+      ,{Field::BLOCKED,  Field::BLOCKED,  Field::EMPTY,    Field::BLOCKED,  Field::BLOCKED}
+    });
+  BOOST_CHECK_EQUAL(builder.decode(CompactBoard(builder.population(), 6)),
+                    expected);
+
+  // try to decode/encode every possible field
+  int numberOfPossibleFields = 1 << builder.population();
+  for (int i = 0; i < numberOfPossibleFields; ++i) {
+    CompactBoard board(builder.population(), i);
+    BOOST_CHECK_EQUAL(board, builder.encode(builder.decode(board)));
+  }
+
+  // TODO perform more tests!!!
 }
