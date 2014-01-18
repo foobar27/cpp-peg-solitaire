@@ -65,15 +65,19 @@ void verifySymmetry(const Matrix<int> & m, const Symmetry & f, initializer_list<
 }
 
 BOOST_AUTO_TEST_CASE(symmetriesTest) {
-  Matrix<int> m(vector<vector<int>>({{1,2,3}, {4,5,6}, {7,8,9}}));
-  verifySymmetry(m, transpose, {{1,4,7}, {2,5,8}, {3,6,9}});
-  verifySymmetry(m, vflip,     {{3,2,1}, {6,5,4}, {9,8,7}});
-  verifySymmetry(m, hflip,     {{7,8,9}, {4,5,6}, {1,2,3}});
-  verifySymmetry(m, rotate90,  {{7,4,1}, {8,5,2}, {9,6,3}});
-  verifySymmetry(m, rotate180, {{9,8,7}, {6,5,4}, {3,2,1}});
-  verifySymmetry(m, rotate270, {{3,6,9}, {2,5,8}, {1,4,7}});
-  verifySymmetry(m, vflip_rotate90, {{1,4,7}, {2,5,8}, {3,6,9}});
-  verifySymmetry(m, hflip_rotate90, {{9,6,3}, {8,5,2}, {7,4,1}});
+  Matrix<int> m1 = intMatrix({{1,2,3}, {4,5,6}, {7,8,9}});
+  verifySymmetry(m1, transpose, {{1,4,7}, {2,5,8}, {3,6,9}});
+  verifySymmetry(m1, vflip,     {{3,2,1}, {6,5,4}, {9,8,7}});
+  verifySymmetry(m1, hflip,     {{7,8,9}, {4,5,6}, {1,2,3}});
+  verifySymmetry(m1, rotate90,  {{7,4,1}, {8,5,2}, {9,6,3}});
+  verifySymmetry(m1, rotate180, {{9,8,7}, {6,5,4}, {3,2,1}});
+  verifySymmetry(m1, rotate270, {{3,6,9}, {2,5,8}, {1,4,7}});
+  verifySymmetry(m1, vflip_rotate90, {{1,4,7}, {2,5,8}, {3,6,9}});
+  verifySymmetry(m1, hflip_rotate90, {{9,6,3}, {8,5,2}, {7,4,1}});
+
+  // matrix is not a square
+  Matrix<int> m2 = intMatrix({{1,2,3}, {4,5,6}});
+  verifySymmetry(m2, transpose, {{1, 4}, {2, 5}, {3, 6}});
 }
 
 BOOST_AUTO_TEST_CASE(lookupTableTest) {

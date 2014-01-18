@@ -22,17 +22,25 @@ namespace pegsolitaire {
 
   template<typename T>
 
-  // FIXME remove defaultValue if possible
   Matrix<T> transform(const Matrix<T> & input, std::function<Coordinates(const Coordinates &, const Coordinates &)> f, const T & defaultValue) {
-    int nRows = input.numberOfRows();
-    int nCols = input.numberOfColumns();
-    assert(nRows == nCols); // currently only square matrices supported
-    const auto bounds = Coordinates(nRows - 1, nCols - 1);
-    auto transformedBounds = bounds; // OK, because square matrix
-    Matrix<T> output(transformedBounds.first + 1, transformedBounds.second + 1, defaultValue);
-    for (int r = 0; r < nRows; ++r)
-      for (int c = 0; c < nCols; ++c)
-        output(f(bounds, Coordinates(r, c))) = input(r, c);
+    int inRows = input.numberOfRows();
+    int inCols = input.numberOfColumns();
+    auto iBounds = Coordinates(inRows - 1, inCols - 1);
+    int onRows = 0;
+    int onCols = 0;
+    for (int r = 0; r < inRows; ++r)
+      for (int c = 0; c < inCols; ++c) {
+        auto p = f(iBounds, Coordinates(r, c));
+        onRows = std::max(onRows, p.first);
+        onCols = std::max(onCols, p.second);
+      }
+    onRows++;
+    onCols++;
+
+    Matrix<T> output(onRows, onCols, defaultValue);
+    for (int r = 0; r < inRows; ++r)
+      for (int c = 0; c < inCols; ++c)
+        output(f(iBounds, Coordinates(r, c))) = input(r, c);
     return output;
   }
 
