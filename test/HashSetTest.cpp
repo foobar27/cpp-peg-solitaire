@@ -8,11 +8,20 @@
 #include <set>
 #include <vector>
 #include <sstream>
+#include <cmath>
 
 #include "HashSet.hpp"
 
 using namespace std;
 using namespace pegsolitaire;
+
+template<typename valueType, typename indexType>
+struct ModuloHashFunction {
+  indexType operator()(indexType capacity, valueType value) const {
+    indexType h = value;
+    return abs(h % capacity);
+  }
+};
 
 BOOST_AUTO_TEST_CASE(hashSet_simple_int32) {
   HashSet< HashSetTraits<32> > set;
@@ -60,8 +69,7 @@ BOOST_AUTO_TEST_CASE(hashSet_int8_full_random_symmetric) {
 }
 
 BOOST_AUTO_TEST_CASE(hashSet_stream) {
-  // TODO use identity-hash-function, with minCapacity
-  HashSet< HashSetTraits<8> > set {1, 2, 6, 9};
+  HashSet<HashSetTraits<8, 16, ModuloHashFunction<unsigned char, unsigned short>>> set {1, 2, 6, 9};
   BOOST_CHECK(set[1]);
   BOOST_CHECK(set[2]);
   BOOST_CHECK(!set[3]);

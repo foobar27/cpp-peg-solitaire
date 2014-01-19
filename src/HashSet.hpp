@@ -10,11 +10,29 @@
 
 namespace pegsolitaire {
 
-  template<unsigned int VALUE_BIT_WIDTH, unsigned int INDEX_BIT_WIDTH = 2*VALUE_BIT_WIDTH>
+  template<typename valueType, typename indexType>
+  struct DefaultIntegerHashFunction {
+    indexType operator()(indexType capacity, valueType value) const {
+      indexType h = value;
+      // Copied from Apache's AbstractHashedMap; prevents power-of-two collisions.
+      h += ~(h << 9);
+      h ^= (h >> 14);
+      h += (h << 4);
+      h ^= (h >> 10);
+      // Power of two trick.
+      return h & (capacity-1);
+    }
+  };
+
+  template<unsigned int VALUE_BIT_WIDTH,
+           unsigned int INDEX_BIT_WIDTH = 2*VALUE_BIT_WIDTH,
+           typename HashFunctionType = DefaultIntegerHashFunction<typename boost::uint_t<VALUE_BIT_WIDTH>::least, typename boost::uint_t<VALUE_BIT_WIDTH>::least>
+           >
   struct HashSetTraits {
     static constexpr int minCapacity = 1 << 5;
     using valueType = typename boost::uint_t<VALUE_BIT_WIDTH>::least;
-    using indexType = typename boost::uint_t<INDEX_BIT_WIDTH>::least; // TODO this is a quick hack.
+    using indexType = typename boost::uint_t<INDEX_BIT_WIDTH>::least; // TODO this is a quick hack. If you correct it, also correct the HashFunctionType default value
+    using hashFunctionType = HashFunctionType;
   };
 
   template <class hashSetT>
@@ -70,11 +88,14 @@ namespace pegsolitaire {
   public:
     using valueType = typename hashSetT::valueType;
     using indexType = typename hashSetT::indexType;
+    using hashFunctionType = typename hashSetT::hashFunctionType;
     using const_iterator = boost::filter_iterator<
       IsValidElement<hashSetT>,
       data_iter<const valueType>>;
     static constexpr valueType invalidElement = 0;
     static constexpr indexType minCapacity = hashSetT::minCapacity;
+    // TODO can I make the following 'static constexpr'?
+    const hashFunctionType hashFunction {};
 
     HashSet() : HashSet(minCapacity) {}
 
@@ -118,16 +139,8 @@ namespace pegsolitaire {
     indexType m_capacity; // TODO remove?
     valueType *m_table;
 
-    // TODO move to trait!
     indexType getIndex(valueType value) const {
-      indexType h = value;
-      // Copied from Apache's AbstractHashedMap; prevents power-of-two collisions.
-      h += ~(h << 9);
-      h ^= (h >> 14);
-      h += (h << 4);
-      h ^= (h >> 10);
-      // Power of two trick.
-      return h & (m_capacity-1);
+      return hashFunction(m_capacity, value);
     }
 
     indexType findOrEmpty(indexType value) const {
