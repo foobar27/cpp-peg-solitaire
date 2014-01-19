@@ -3,6 +3,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src
   ${CMAKE_BINARY_DIR}/src
 )
-add_executable(testsuite testsuite.cpp)
-target_link_libraries(testsuite PegSolitaire ${Boost_LIBRARIES})
-add_test(testsuite testsuite)
+add_executable(PegSolitaireTest PegSolitaireTest.cpp)
+target_link_libraries(PegSolitaireTest PegSolitaire ${Boost_LIBRARIES})
+add_test(PegSolitaireTest PegSolitaireTest)

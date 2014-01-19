@@ -1,8 +1,5 @@
-#define BOOST_TEST_MAIN
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "pegsolitaire_test"
-
-#include <boost/test/unit_test.hpp>
+#define BOOST_TEST_MODULE "PegSolitaireTest"
+#include "TestCommon.hpp"
 
 #include "BoardIO.hpp"
 #include "impl/BoardBuilderImpl.hpp"
