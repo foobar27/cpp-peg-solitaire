@@ -1,4 +1,4 @@
-#include "impl/BoardBuilderImpl.hpp"
+#include "impl/BoardCompilerImpl.hpp"
 
 #include <initializer_list>
 
@@ -132,7 +132,7 @@ namespace pegsolitaire {
     return true;
   }
 
-  CompactBoard BoardBuilder::encode(const Matrix<Field> & input) const {
+  CompactBoard BoardCompiler::encode(const Matrix<Field> & input) const {
     int nRows = m_lookupTable.numberOfRows();
     int nCols = m_lookupTable.numberOfColumns();
     CompactBoard result(m_population, 0);
@@ -148,7 +148,7 @@ namespace pegsolitaire {
     return result;
   }
 
-  Matrix<Field> BoardBuilder::decode(const CompactBoard & input) const {
+  Matrix<Field> BoardCompiler::decode(const CompactBoard & input) const {
     int nRows = m_lookupTable.numberOfRows();
     int nCols = m_lookupTable.numberOfColumns();
     Matrix<Field> result(m_lookupTable.numberOfRows(),
@@ -167,7 +167,7 @@ namespace pegsolitaire {
     return result;
   }
 
-  bool BoardBuilder::isTransformationValid(const Symmetry & s) const {
+  bool BoardCompiler::isTransformationValid(const Symmetry & s) const {
     if (!haveEqualShape(m_lookupTable, transform(m_lookupTable, s, 0)))
       return false;
     for (const auto & m : m_masks) {
@@ -252,7 +252,7 @@ namespace pegsolitaire {
     return result;
   }
 
-  BoardBuilder::BoardBuilder(const vector<MoveDirection> & moveDirections, const Matrix<bool> & fields)
+  BoardCompiler::BoardCompiler(const vector<MoveDirection> & moveDirections, const Matrix<bool> & fields)
     : m_moveDirections(moveDirections)
     , m_population(populationCount(fields))
     , m_fields(fields)
@@ -260,7 +260,7 @@ namespace pegsolitaire {
     , m_masks(buildMoveMasks(fields, m_lookupTable, moveDirections))
   {}
 
-  BoardBuilder::BoardBuilder(const vector<MoveDirection> & moveDirections, const Matrix<bool> && fields)
+  BoardCompiler::BoardCompiler(const vector<MoveDirection> & moveDirections, const Matrix<bool> && fields)
     : m_fields(fields)
     , m_lookupTable(buildLookupTable(m_fields))
   {}

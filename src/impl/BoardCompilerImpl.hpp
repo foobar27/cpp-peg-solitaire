@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PegSolitaireConfig.hpp"
-#include "BoardBuilder.hpp"
+#include "BoardCompiler.hpp"
 #include <functional>
 #include <cassert>
 

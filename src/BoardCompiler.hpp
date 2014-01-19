@@ -12,10 +12,10 @@ namespace pegsolitaire {
 
   std::ostream& operator<<(std::ostream& os, Field field);
 
-  class PEGSOLITAIRE_EXPORT BoardBuilder {
+  class PEGSOLITAIRE_EXPORT BoardCompiler {
   public:
-    BoardBuilder(const std::vector<MoveDirection> & moveDirections, const Matrix<bool> & fields);
-    BoardBuilder(const std::vector<MoveDirection> & moveDirections, const Matrix<bool> && fields);
+    BoardCompiler(const std::vector<MoveDirection> & moveDirections, const Matrix<bool> & fields);
+    BoardCompiler(const std::vector<MoveDirection> & moveDirections, const Matrix<bool> && fields);
 
     CompactBoard encode(const Matrix<Field> &) const;
     Matrix<Field> decode(const CompactBoard & input) const;

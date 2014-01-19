@@ -2,7 +2,7 @@
 #include "TestCommon.hpp"
 
 #include "BoardIO.hpp"
-#include "impl/BoardBuilderImpl.hpp"
+#include "impl/BoardCompilerImpl.hpp"
 
 #include <sstream>
 #include <string>
@@ -92,8 +92,8 @@ BOOST_AUTO_TEST_CASE(moveMasksTest) {
   // TODO
 }
 
-BOOST_AUTO_TEST_CASE(BoardBuilder_test) {
-  BoardBuilder builder(allDirections, asymmetricField);
+BOOST_AUTO_TEST_CASE(BoardCompiler_test) {
+  BoardCompiler compiler(allDirections, asymmetricField);
 
   // decode some known value of a board
   Matrix<Field> expected(vector<vector<Field>> {
@@ -103,19 +103,19 @@ BOOST_AUTO_TEST_CASE(BoardBuilder_test) {
       ,{Field::BLOCKED,  Field::OCCUPIED, Field::BLOCKED,  Field::OCCUPIED, Field::BLOCKED}
       ,{Field::BLOCKED,  Field::BLOCKED,  Field::EMPTY,    Field::BLOCKED,  Field::BLOCKED}
     });
-  BOOST_CHECK_EQUAL(builder.decode(CompactBoard(builder.population(), 6)),
+  BOOST_CHECK_EQUAL(compiler.decode(CompactBoard(compiler.population(), 6)),
                     expected);
 
   // decode/encode-cycle for every possible field
-  int numberOfPossibleFields = 1 << builder.population();
+  int numberOfPossibleFields = 1 << compiler.population();
   for (int i = 0; i < numberOfPossibleFields; ++i) {
-    CompactBoard board(builder.population(), i);
-    BOOST_CHECK_EQUAL(board, builder.encode(builder.decode(board)));
+    CompactBoard board(compiler.population(), i);
+    BOOST_CHECK_EQUAL(board, compiler.encode(compiler.decode(board)));
   }
 
   int n = count_if(allSymmetries.begin(),
                    allSymmetries.end(),
-                   bind(&BoardBuilder::isTransformationValid, &builder, std::placeholders::_1));
+                   bind(&BoardCompiler::isTransformationValid, &compiler, placeholders::_1));
   BOOST_CHECK_EQUAL(n, 1 ); // only vflip
 
   // TODO further consistency tests

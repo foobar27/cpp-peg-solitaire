@@ -4,7 +4,7 @@ find_package(Boost 1.55.0 COMPONENTS system program_options filesystem unit_test
 find_package(LLVM)
 
 add_compiler_export_flags(PegSolitaire_EXPORT_FLAGS)
-add_library(PegSolitaire ${LIB_TYPE} Board.cpp BoardIO.cpp BoardBuilder.cpp)
+add_library(PegSolitaire ${LIB_TYPE} Board.cpp BoardIO.cpp BoardCompiler.cpp)
 set_target_properties(PegSolitaire PROPERTIES
   LINK_FLAGS ${PegSolitaire_EXPORT_FLAGS})
 
