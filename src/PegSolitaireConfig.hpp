@@ -8,3 +8,7 @@
 //#else
 //#  define PEGSOLITAIRE_TEST_EXPORT
 //#endif
+
+// TODO make portable!
+#define likely(x) __builtin_expect((x),1)
+#define unlikely(x) __builtin_expect((x),0)

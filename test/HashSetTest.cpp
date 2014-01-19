@@ -1,4 +1,5 @@
-#define BOOST_TEST_MODULE "HashSet_test"
+#define BOOST_TEST_MODULE "HashSetTest"
+#include "TestCommon.hpp"
 
 #include <boost/random.hpp>
 #include <boost/test/test_case_template.hpp>
@@ -26,7 +27,7 @@ BOOST_AUTO_TEST_CASE(hashSet_simple_int32) {
 BOOST_AUTO_TEST_CASE(resizes) {
   HashSet< HashSetTraits<32> > set;
   BOOST_CHECK_EQUAL(set.capacity(), 1<<5);
-  for (int i=0; i<0.74*256; ++i)
+  for (int i=1; i<0.74*256; ++i)
     set += i;
   // TODO do some tests
 }
@@ -42,15 +43,18 @@ BOOST_AUTO_TEST_CASE(hashSet_int8_full_random_symmetric) {
   HashSet< HashSetTraits<8> > set;
 
   vector<int> requests;
-  for (int i=0; i<0.70*255; ++i)
-    requests.push_back(dist(rng));
+  for (int i=0; i<0.70*255; ++i) {
+    auto v = dist(rng);
+    if (v != 0)
+      requests.push_back(v);
+  }
 
-  set<int> seen;
+  std::set<int> seen;
   for (int r : requests) {
     set += r;
     seen.insert(r);
   }
-  for (int i=0; i<256; ++i)
+  for (int i=1; i<256; ++i)
     BOOST_CHECK_EQUAL(set[i], seen.count(i));
 }
 
