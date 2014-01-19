@@ -3,8 +3,13 @@
 #include "PegSolitaireConfig.hpp"
 #include <boost/integer.hpp>
 #include <vector>
+#include <utility>
+#include <cstring>
+#include <boost/iterator/iterator_facade.hpp>
+#include <boost/iterator/filter_iterator.hpp>
 
 namespace pegsolitaire {
+
   template<unsigned int VALUE_BIT_WIDTH, unsigned int INDEX_BIT_WIDTH = 2*VALUE_BIT_WIDTH>
   struct HashSetTraits {
     static constexpr int minCapacity = 1 << 5;
@@ -12,15 +17,74 @@ namespace pegsolitaire {
     using indexType = typename boost::uint_t<INDEX_BIT_WIDTH>::least; // TODO this is a quick hack.
   };
 
+  template <class hashSetT>
+  class HashSet;
+
+  namespace {
+    template<class hashSetT>
+    struct IsValidElement {
+      bool operator()(int x) {
+        return x != HashSet<hashSetT>::invalidElement;
+      }
+    };
+
+    template <class Value>
+    class data_iter : public boost::iterator_adaptor<
+      data_iter<Value>,
+      Value*,
+      Value,
+      boost::forward_traversal_tag,
+      Value // don't use references (Value is usually a primitive type)
+      >
+    {
+    private:
+      struct enabler {};  // a private type avoids misuse
+      friend class boost::iterator_core_access;
+      void increment() {
+        ++this->base_reference();
+
+      }
+
+    public:
+      data_iter()
+        : data_iter::iterator_adaptor_(0) {}
+
+      explicit data_iter(Value* p)
+        : data_iter::iterator_adaptor_(p) {}
+
+      template <class OtherValue>
+      data_iter(
+                data_iter<OtherValue> const& other
+                , typename boost::enable_if<
+                boost::is_convertible<OtherValue*,Value*>
+                , enabler
+                >::type = enabler()
+                )
+        : data_iter::iterator_adaptor_(other.base()) {}
+    };
+
+  }
+
   template<class hashSetT>
   class HashSet {
   public:
     using valueType = typename hashSetT::valueType;
     using indexType = typename hashSetT::indexType;
+    using const_iterator = boost::filter_iterator<
+      IsValidElement<hashSetT>,
+      data_iter<const valueType>>;
     static constexpr valueType invalidElement = 0;
     static constexpr indexType minCapacity = hashSetT::minCapacity;
 
     HashSet() : HashSet(minCapacity) {}
+
+    HashSet(std::initializer_list<valueType> values)
+      : HashSet() // this is not quite efficient, but this ctor is used for tests only
+    {
+      ensureCapacityFor(values.size());
+      for (auto v : values)
+        *this += v;
+    }
 
     indexType size() const {
       return m_size;
@@ -37,6 +101,16 @@ namespace pegsolitaire {
     bool operator+=(valueType value) {
       ensureCapacityFor(m_size+1);
       return internalAdd(value);
+    }
+
+    const_iterator begin() const {
+      return const_iterator(data_iter<valueType>(m_table),
+                            data_iter<valueType>(m_table + m_capacity));
+    }
+
+    const_iterator end() const {
+      return const_iterator(data_iter<valueType>(m_table + m_capacity),
+                            data_iter<valueType>(m_table + m_capacity));
     }
 
   private:
@@ -146,4 +220,19 @@ namespace pegsolitaire {
     }
 
   };
+
+  template<class hashSetT>
+  std::ostream& operator<<(std::ostream& os, const HashSet<hashSetT> & set) {
+    os << "{";
+    bool first = true;
+    for (auto i : set) {
+      if (!first)
+        os << ", ";
+      os << +i;
+      first = false;
+    }
+    os << "}";
+    return os;
+  }
+
 }

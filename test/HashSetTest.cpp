@@ -7,6 +7,7 @@
 
 #include <set>
 #include <vector>
+#include <sstream>
 
 #include "HashSet.hpp"
 
@@ -58,6 +59,13 @@ BOOST_AUTO_TEST_CASE(hashSet_int8_full_random_symmetric) {
     BOOST_CHECK_EQUAL(set[i], seen.count(i));
 }
 
-BOOST_AUTO_TEST_CASE(hashSet_random_symmetric) {
-  // TODO
+BOOST_AUTO_TEST_CASE(hashSet_stream) {
+  // TODO use identity-hash-function, with minCapacity
+  HashSet< HashSetTraits<8> > set {1, 2, 6, 9};
+  BOOST_CHECK(set[1]);
+  BOOST_CHECK(set[2]);
+  BOOST_CHECK(!set[3]);
+  stringstream ss;
+  ss << set;
+  BOOST_CHECK_EQUAL(ss.str(), "{1, 2, 6, 9}");
 }
