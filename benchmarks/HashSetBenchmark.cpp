@@ -1,5 +1,6 @@
 #include "HashSet.hpp"
 
+#include <set>
 #include <iostream>
 #include <chrono>
 #include <sstream>
@@ -28,28 +29,36 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  int numberOfIterations = vm["number-of-iterations"].as<unsigned long>();
-  int numberOfElements = vm["number-of-elements"].as<unsigned long>();
+  unsigned long numberOfIterations = vm["number-of-iterations"].as<unsigned long>();
+  unsigned long numberOfElements = vm["number-of-elements"].as<unsigned long>();
 
-  HashSet< HashSetTraits<32> > set; // TODO change to 64 bits
-  long expectedSum = 0;
+  HashSet< HashSetTraits<32> > s;
+  set<decltype(*s.begin())> duplicates;
+  unsigned long expectedSumPerIteration = 0;
   for (unsigned long i = 0; i < numberOfElements; ++i) {
-    long v = i*i + 1;
-    set += v;
-    expectedSum += v;
+    decltype(*s.begin()) v = i*i + 1;
+    if (v != 0 && duplicates.count(v) == 0) {
+      s += v;
+      expectedSumPerIteration += v;
+      duplicates.insert(v);
+    } // else: just skip 'invalidElement'
   }
-  expectedSum *= numberOfIterations;
+
+  unsigned long expectedSum = expectedSumPerIteration * numberOfIterations;
 
   auto begin = std::chrono::high_resolution_clock::now();
-  long sum = 0;
-  for (unsigned long i = 0; i < numberOfIterations; ++i) {
-    for (auto v : set) {
+  unsigned long sum = 0;
+  for (unsigned long i = 0; i < numberOfIterations; ++i)
+    for (auto v : s)
       sum += v;
-    }
-  }
   auto end = std::chrono::high_resolution_clock::now();
+
   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-  cout << sum << endl;
+  if (sum != expectedSum) {
+    cerr << "self-check failed, expected " << expectedSum << endl
+         << "                    but got " << sum << endl;
+    return -1;
+  }
   cout << "elapsed: " << elapsed.count() << " ms" << endl;
   return 0;
 }
