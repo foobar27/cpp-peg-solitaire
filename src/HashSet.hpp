@@ -4,7 +4,9 @@
 #include <boost/integer.hpp>
 #include <vector>
 #include <utility>
+#include <cassert>
 #include <cstring>
+#include <boost/utility/enable_if.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 
