@@ -1,6 +1,6 @@
 #include "HashSet.hpp"
 
-#include <set>
+#include <unordered_set>
 #include <iostream>
 #include <chrono>
 #include <sstream>
@@ -33,32 +33,65 @@ int main(int argc, char** argv) {
   unsigned long numberOfElements = vm["number-of-elements"].as<unsigned long>();
 
   HashSet< HashSetTraits<32> > s;
-  set<decltype(*s.begin())> duplicates;
-  unsigned long expectedSumPerIteration = 0;
-  for (unsigned long i = 0; i < numberOfElements; ++i) {
-    decltype(*s.begin()) v = i*i + 1;
+  unordered_set<decltype(*s.begin())> duplicates;
+  unsigned long expected = 0;
+  using valueType = decltype(*s.begin());
+  for (unsigned long idx = 0; idx < numberOfElements; ++idx) {
+    valueType v = idx*idx + 1;
     if (v != 0 && duplicates.count(v) == 0) {
       s += v;
-      expectedSumPerIteration += v;
+      for (int it = 0; it < numberOfIterations; ++it)
+        expected ^= v;
       duplicates.insert(v);
     } // else: just skip 'invalidElement'
   }
 
-  unsigned long expectedSum = expectedSumPerIteration * numberOfIterations;
+  {
+    cout << "starting benchmark (via iterator)..." << endl;
 
-  auto begin = std::chrono::high_resolution_clock::now();
-  unsigned long sum = 0;
-  for (unsigned long i = 0; i < numberOfIterations; ++i)
-    for (auto v : s)
-      sum += v;
-  auto end = std::chrono::high_resolution_clock::now();
+    auto begin = std::chrono::high_resolution_clock::now();
+    unsigned long actual = 0;
+    for (unsigned long i = 0; i < numberOfIterations; ++i)
+      for (auto v : s)
+        actual ^= v;
+    auto end = std::chrono::high_resolution_clock::now();
 
-  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-  if (sum != expectedSum) {
-    cerr << "self-check failed, expected " << expectedSum << endl
-         << "                    but got " << sum << endl;
-    return -1;
+    cout << "benchmark finished. value=" << actual << endl;
+
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    if (actual != expected) {
+      cerr << "self-check failed, expected " << actual << endl
+           << "                    but got " << actual << endl;
+      return -1;
+    }
+    cout << "elapsed (via iterator): " << elapsed.count() << " ms" << endl;
   }
-  cout << "elapsed: " << elapsed.count() << " ms" << endl;
+
+  {
+    cout << "starting benchmark (via raw data)..." << endl;
+
+    auto begin = std::chrono::high_resolution_clock::now();
+    unsigned long actual = 0;
+    for (unsigned long i = 0; i < numberOfIterations; ++i) {
+      auto p = s.rawData();
+      unsigned long sz = s.capacity();
+      for (int idx=0; idx<sz; ++idx, ++p) {
+        if (*p != 0)
+          actual ^= *p;
+      }
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+
+    cout << "benchmark finished. value=" << actual << endl;
+
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    if (actual != expected) {
+      cerr << "self-check failed, expected " << expected << endl
+           << "                    but got " << actual << endl;
+      return -1;
+    }
+    cout << "elapsed (via raw data): " << elapsed.count() << " ms" << endl;
+  }
+
   return 0;
 }
