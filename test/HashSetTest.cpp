@@ -68,6 +68,20 @@ BOOST_AUTO_TEST_CASE(hashSet_int8_full_random_symmetric) {
     BOOST_CHECK_EQUAL(set[i], seen.count(i));
 }
 
+BOOST_AUTO_TEST_CASE(emptyHashSet_stream) {
+  HashSet<HashSetTraits<8, 16, ModuloHashFunction<unsigned char, unsigned short>>> set {};
+  stringstream ss;
+  ss << set;
+  BOOST_CHECK_EQUAL(ss.str(), "{}");
+}
+
+BOOST_AUTO_TEST_CASE(singletonHashSet_stream) {
+  HashSet<HashSetTraits<8, 16, ModuloHashFunction<unsigned char, unsigned short>>> set {2};
+  stringstream ss;
+  ss << set;
+  BOOST_CHECK_EQUAL(ss.str(), "{2}");
+}
+
 BOOST_AUTO_TEST_CASE(hashSet_stream) {
   HashSet<HashSetTraits<8, 16, ModuloHashFunction<unsigned char, unsigned short>>> set {1, 2, 6, 9};
   BOOST_CHECK(set[1]);
