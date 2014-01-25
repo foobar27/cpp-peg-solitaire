@@ -14,7 +14,7 @@ namespace pegsolitaire {
 
   template<typename valueType, typename indexType>
   struct DefaultIntegerHashFunction {
-    indexType operator()(indexType capacity, valueType value) const {
+    static indexType get(indexType capacity, valueType value) {
       indexType h = value;
       // Copied from Apache's AbstractHashedMap; prevents power-of-two collisions.
       h += ~(h << 9);
@@ -96,8 +96,6 @@ namespace pegsolitaire {
       data_iter<const valueType>>;
     static constexpr valueType invalidElement = 0;
     static constexpr indexType minCapacity = hashSetT::minCapacity;
-    // TODO can I make the following 'static constexpr'?
-    const hashFunctionType hashFunction {};
 
     HashSet() : HashSet(minCapacity) {}
 
@@ -136,13 +134,17 @@ namespace pegsolitaire {
                             data_iter<valueType>(m_table + m_capacity));
     }
 
+    const valueType * rawData() const {
+      return m_table;
+    }
+
   private:
     indexType m_size;
     indexType m_capacity; // TODO remove?
     valueType *m_table;
 
     indexType getIndex(valueType value) const {
-      return hashFunction(m_capacity, value);
+      return hashFunctionType::get(m_capacity, value);
     }
 
     indexType findOrEmpty(indexType value) const {

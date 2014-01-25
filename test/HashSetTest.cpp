@@ -17,7 +17,7 @@ using namespace pegsolitaire;
 
 template<typename valueType, typename indexType>
 struct ModuloHashFunction {
-  indexType operator()(indexType capacity, valueType value) const {
+  static indexType get(indexType capacity, valueType value) {
     indexType h = value;
     return abs(h % capacity);
   }
