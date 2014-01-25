@@ -6,4 +6,3 @@ include_directories(
 
 add_executable(HashSetBenchmark HashSetBenchmark.cpp)
 target_link_libraries(HashSetBenchmark PegSolitaire ${Boost_LIBRARIES})
-add_test(HashSetBenchmark HashSetBenchmark)
