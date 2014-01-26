@@ -4,6 +4,9 @@
 
 #include "AST.hpp"
 
+// TODO hide this implementation detail
+#include <llvm/IR/IRBuilder.h>
+
 // forward declaration
 namespace llvm {
   class Value;
@@ -17,12 +20,15 @@ namespace pegsolitaire {
 
     // TODO handle (or remove) the case where the generation returns nullptr
 
+    class ProgramCodeGenerator;
+
     class ExpressionCodeGenerator : public boost::static_visitor<llvm::Value*> {
       struct Impl;
       Impl* impl;
+      friend class ProgramCodeGenerator;
 
     public:
-      ExpressionCodeGenerator(llvm::Module *mod);
+      ExpressionCodeGenerator(llvm::Module *mod, llvm::IRBuilder<>& builder);
       ~ExpressionCodeGenerator();
 
       void setVariable(const pegsolitaire::ast::Variable & x, llvm::Value*);

@@ -21,18 +21,18 @@ namespace pegsolitaire {
     using namespace pegsolitaire::ast;
 
     struct ExpressionCodeGenerator::Impl {
-      llvm::IRBuilder<> builder;
+      llvm::IRBuilder<>& builder;
       llvm::Module *module;
       std::map<Variable, llvm::Value*> variables;
 
-      Impl(llvm::Module * m)
-        : builder(llvm::getGlobalContext())
+      Impl(llvm::Module * m, llvm::IRBuilder<>& builder)
+        : builder(builder)
         , module(m)
       {}
     };
 
-    ExpressionCodeGenerator::ExpressionCodeGenerator(llvm::Module *mod)
-      : impl(new Impl(mod))
+    ExpressionCodeGenerator::ExpressionCodeGenerator(llvm::Module *mod, llvm::IRBuilder<>& builder)
+      : impl(new Impl(mod, builder))
     {}
 
     ExpressionCodeGenerator::~ExpressionCodeGenerator() {

@@ -39,27 +39,27 @@
 
 using namespace pegsolitaire::ast;
 
-class ExpressionPrinter : public boost::static_visitor<> {
-public:
-  void operator()(const boost::dynamic_bitset<> & i) const {
-    std::cout << i.to_ulong();
-  }
-  void operator()(std::shared_ptr<Binary> node) const {
-    std::cout << "(" << node->op << " ";
-    boost::apply_visitor(*this, node->left);
-    std::cout << " ";
-    boost::apply_visitor(*this, node->right);
-    std::cout << ")";
-  }
-  void operator()(std::shared_ptr<Shift> node) const {
-    std::cout << "(<< ";
-    boost::apply_visitor(*this, node->x);
-    std::cout << " " << node->numberOfBits << ")";
-  }
-  void operator()(const Variable & variable) const {
-    std::cout << variable.internalName();
-  }
-};
+// class ExpressionPrinter : public boost::static_visitor<> {
+// public:
+//   void operator()(const boost::dynamic_bitset<> & i) const {
+//     std::cout << i.to_ulong();
+//   }
+//   void operator()(std::shared_ptr<Binary> node) const {
+//     std::cout << "(" << node->op << " ";
+//     boost::apply_visitor(*this, node->left);
+//     std::cout << " ";
+//     boost::apply_visitor(*this, node->right);
+//     std::cout << ")";
+//   }
+//   void operator()(std::shared_ptr<Shift> node) const {
+//     std::cout << "(<< ";
+//     boost::apply_visitor(*this, node->x);
+//     std::cout << " " << node->numberOfBits << ")";
+//   }
+//   void operator()(const Variable & variable) const {
+//     std::cout << variable.internalName();
+//   }
+// };
 
 // BOOST_FUSION_ADAPT_STRUCT(ast::Binary,
 //                           (ast::Operator, op)
@@ -71,19 +71,11 @@ boost::dynamic_bitset<> operator"" _b(unsigned long long n) {
 }
 
 int main() {
-  //  using fusion::for_each;
-
   // TODO improve the following syntax with boost::proto
   Variable arg("arg");
   Expression expr = 3_b | Expression(42_b) & arg;
 
-  std::cout << std::endl;
-
-  llvm::LLVMContext & Context = llvm::getGlobalContext();
-  llvm::Module * module = new llvm::Module("pegsolitaire jit", Context);
-
-  pegsolitaire::codegen::ExpressionCodeGenerator cg(module);
-
+  llvm::Module * module = new llvm::Module("pegsolitaire jit", llvm::getGlobalContext());
 
   auto ft = llvm::TypeBuilder<uint64_t(uint64_t), false>::get(module->getContext());
   llvm::Function *f = llvm::Function::Create
@@ -91,20 +83,19 @@ int main() {
      llvm::Function::ExternalLinkage,
      "getNormalForm",
      module);
-  f->arg_begin()->setName("x");
+  f->arg_begin()->setName("fc");
 
-  cg.setVariable(arg, &*f->arg_begin());
-  //  boost::apply_visitor(ExpressionPrinter(), expr);
-  auto x = boost::apply_visitor(cg, expr);
-  //  x->dump();
-
-  //llvm::IRBuilder<>& builder = cg.debugBuilder();
   llvm::IRBuilder<> builder(module->getContext());
+  pegsolitaire::codegen::ExpressionCodeGenerator cg(module, builder);
   llvm::BasicBlock *bb = llvm::BasicBlock::Create
     (module->getContext(),
      "entry",
      f);
   builder.SetInsertPoint(bb);
+
+  cg.setVariable(arg, &*f->arg_begin());
+  auto x = boost::apply_visitor(cg, expr);
+  //  x->dump();
 
   llvm::Value* retVal = x;
   builder.CreateRet(retVal);
