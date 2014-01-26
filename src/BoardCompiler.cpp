@@ -258,11 +258,64 @@ namespace pegsolitaire {
     , m_fields(fields)
     , m_lookupTable(buildLookupTable(m_fields))
     , m_masks(buildMoveMasks(fields, m_lookupTable, moveDirections))
-  {}
+  {
+    // for (auto & s : allSymmetries)
+    //   if (isTransformationValid(s))
+    //     m_symmetryFunctions = generateCode(transform(f));
+  }
 
   BoardCompiler::BoardCompiler(const vector<MoveDirection> & moveDirections, const Matrix<bool> && fields)
     : m_fields(fields)
     , m_lookupTable(buildLookupTable(m_fields))
   {}
+
+  vector<int> BoardCompiler::computePermutations(const Matrix<int> & lookupTable) const {
+    auto it = lookupTable.data().begin();
+    vector<int> permutations(m_population, 0);
+    for (int i = m_population - 1; i >= 0; --i) {
+      while (*it == -1)
+        ++it;
+      permutations[i] =*it;
+      ++it;
+    }
+    return permutations;
+  }
+
+  map<int, CompactBoard> BoardCompiler::calculateOperations(const Matrix<int> & lookupTable) const {
+    map<int, CompactBoard> output;
+    auto perm = computePermutations(lookupTable);
+    for (int i = 0; i < m_population; ++i) {
+      CompactBoard mask(m_population, 0);
+      mask[i] = true;
+      int diff = perm[i] - i;
+      if (output.find(diff) == output.end())
+        output[diff] = mask;
+      else
+        output[diff] |= mask;
+    }
+    return output;
+  }
+
+  // Expression BoardCompiler::generateCode(const Matrix<int> & lookupTable, const Var & f) const {
+  //   auto mask = operations[diff];
+  //   Expression x = 0;
+  //   for (auto & op : calculateOperations(lookupTable))
+  //     x |= (f & mask) << diff;
+  //   return x;
+  // }
+  //
+  // Expression BoardCompiler::generateNormalForm(const Var & v) const {
+  //   Var n = f; // identity transformation
+  //   for (auto & f : m_symmetryFunctions)
+  //     n = min(n, f(v));
+  //   return n;
+  // }
+  //
+  // Expression BoardCompiler::generateEquivalentFields(const Var & f, const Procedure<CompactBoard> & callback) const {
+  //   Expression result;
+  //   for (auto & f : m_symmetryFunctions)
+  //     result ,= callback(f(v));
+  //   return result;
+  // }
 
 }

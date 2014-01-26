@@ -1,10 +1,15 @@
 include (GenerateExportHeader)
 
 find_package(Boost 1.55.0 COMPONENTS system program_options filesystem unit_test_framework REQUIRED)
-find_package(LLVM)
 
 add_compiler_export_flags(PegSolitaire_EXPORT_FLAGS)
-add_library(PegSolitaire ${LIB_TYPE} Board.cpp BoardIO.cpp BoardCompiler.cpp)
+add_library(PegSolitaire ${LIB_TYPE}
+#  AST.cpp
+  Board.cpp
+  BoardIO.cpp
+  BoardCompiler.cpp
+  )
+
 set_target_properties(PegSolitaire PROPERTIES
   LINK_FLAGS ${PegSolitaire_EXPORT_FLAGS})
 
@@ -22,10 +27,19 @@ add_executable(peg-solitaire main.cpp)
 target_link_libraries(peg-solitaire PegSolitaire)
 
 if (PEGSOLITAIRE_USE_LLVM)
+find_package(LLVM)
+
   # TODO integrate the following experiments into the main project
-  add_executable(llvm-experiments LlvmExperiments.cpp)
-  target_link_libraries(llvm-experiments ${LLVM_ALL_LIBS})
-  set_target_properties(llvm-experiments PROPERTIES
+  add_executable(LlvmExperiments LlvmExperiments.cpp)
+  target_link_libraries(LlvmExperiments ${LLVM_ALL_LIBS})
+  set_target_properties(LlvmExperiments PROPERTIES
     COMPILE_FLAGS ${LLVM_CPPFLAGS}
     LINK_FLAGS ${LLVM_LDFLAGS})
+
+  add_executable(BoostExperiments BoostExperiments.cpp AST.cpp CodeGenerator.cpp)
+  target_link_libraries(BoostExperiments ${LLVM_ALL_LIBS})
+  set_target_properties(BoostExperiments PROPERTIES
+    COMPILE_FLAGS ${LLVM_CPPFLAGS}
+    LINK_FLAGS ${LLVM_LDFLAGS})
+
 endif ()

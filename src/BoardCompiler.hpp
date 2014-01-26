@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Board.hpp"
+#include <map>
 #include <utility>
 
 namespace pegsolitaire {
@@ -26,11 +27,16 @@ namespace pegsolitaire {
 
   private:
 
+    std::vector<int> computePermutations(const Matrix<int> & lookupTable) const;
+    // TODO rename to something useful: moveOperations, checkOperations?
+    std::map<int, CompactBoard> calculateOperations(const Matrix<int> & lookupTable) const;
+
     std::vector<MoveDirection> m_moveDirections;
     int m_population;
     Matrix<bool> m_fields;
     Matrix<int> m_lookupTable;
     std::vector<Masks> m_masks;
+    //    std::vector<Function<Var, Var>> m_symmetryFunctions;
   };
 
 }
