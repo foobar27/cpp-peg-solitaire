@@ -1,7 +1,27 @@
 #include "AST.hpp"
 
+#include <atomic>
+#include <sstream>
+
 namespace pegsolitaire {
   namespace ast {
+
+    static std::atomic<VariableIndex> nextVariableIndex {0};
+
+    Variable::Variable(const std::string & originalName)
+      : m_index(nextVariableIndex++)
+      , m_originalName(originalName)
+    {}
+
+    std::string Variable::originalName() const {
+      return m_originalName;
+    }
+
+    std::string Variable::internalName() const {
+      std::stringstream ss;
+      ss << m_originalName << "_" << m_index;
+      return ss.str();
+    }
 
     std::ostream& operator<<(std::ostream& os, const Operator& op) {
       os << static_cast<char>(op);

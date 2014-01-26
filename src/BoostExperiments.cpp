@@ -8,6 +8,7 @@
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include <llvm/ExecutionEngine/JIT.h>
@@ -19,6 +20,7 @@
 #include <llvm/IR/DataLayout.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/TypeBuilder.h>
 #include <llvm/Support/TargetSelect.h>
 
 #include <memory>
@@ -54,6 +56,9 @@ public:
     boost::apply_visitor(*this, node->x);
     std::cout << " " << node->numberOfBits << ")";
   }
+  void operator()(const Variable & variable) const {
+    std::cout << variable.internalName();
+  }
 };
 
 // BOOST_FUSION_ADAPT_STRUCT(ast::Binary,
@@ -69,8 +74,8 @@ int main() {
   //  using fusion::for_each;
 
   // TODO improve the following syntax with boost::proto
-  Expression expr2 = 3_b | 5_b & Expression(42_b) & 10_b | 100_b;
-  boost::apply_visitor(ExpressionPrinter(), expr2);
+  Variable arg("arg");
+  Expression expr = 3_b | Expression(42_b) & arg;
 
   std::cout << std::endl;
 
@@ -78,8 +83,33 @@ int main() {
   llvm::Module * module = new llvm::Module("pegsolitaire jit", Context);
 
   pegsolitaire::codegen::ExpressionCodeGenerator cg(module);
-  auto x = boost::apply_visitor(cg, expr2);
-  x->dump();
+
+
+  auto ft = llvm::TypeBuilder<uint64_t(uint64_t), false>::get(module->getContext());
+  llvm::Function *f = llvm::Function::Create
+    (ft,
+     llvm::Function::ExternalLinkage,
+     "getNormalForm",
+     module);
+  f->arg_begin()->setName("x");
+
+  cg.setVariable(arg, &*f->arg_begin());
+  //  boost::apply_visitor(ExpressionPrinter(), expr);
+  auto x = boost::apply_visitor(cg, expr);
+  //  x->dump();
+
+  //llvm::IRBuilder<>& builder = cg.debugBuilder();
+  llvm::IRBuilder<> builder(module->getContext());
+  llvm::BasicBlock *bb = llvm::BasicBlock::Create
+    (module->getContext(),
+     "entry",
+     f);
+  builder.SetInsertPoint(bb);
+
+  llvm::Value* retVal = x;
+  builder.CreateRet(retVal);
+  llvm::verifyFunction(*f);
+
   module->dump();
 
   //for_each(foo, print_xml());

@@ -13,6 +13,7 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/Support/TargetSelect.h>
 
+#include <set>
 #include <stdexcept>
 
 namespace pegsolitaire {
@@ -22,6 +23,7 @@ namespace pegsolitaire {
     struct ExpressionCodeGenerator::Impl {
       llvm::IRBuilder<> builder;
       llvm::Module *module;
+      std::map<Variable, llvm::Value*> variables;
 
       Impl(llvm::Module * m)
         : builder(llvm::getGlobalContext())
@@ -35,6 +37,12 @@ namespace pegsolitaire {
 
     ExpressionCodeGenerator::~ExpressionCodeGenerator() {
       delete impl;
+    }
+
+    void ExpressionCodeGenerator::setVariable(const Variable & variable, llvm::Value* value) {
+      // don't add the same variable twice (variable ought to be unique anyway)
+      if (impl->variables.find(variable) == impl->variables.end())
+        impl->variables[variable] = value;
     }
 
     llvm::Value* ExpressionCodeGenerator::operator()(const boost::dynamic_bitset<> & i) const {
@@ -63,6 +71,12 @@ namespace pegsolitaire {
         return impl->builder.CreateShl(x, node->numberOfBits);
       else
         return impl->builder.CreateLShr(x, node->numberOfBits);
+    }
+
+    llvm::Value* ExpressionCodeGenerator::operator()(const Variable & v) const {
+      if (impl->variables.find(v) == impl->variables.end())
+        throw std::runtime_error(std::string("variable ") + v.internalName() + " not defined!");
+      return impl->variables[v];
     }
 
   }
