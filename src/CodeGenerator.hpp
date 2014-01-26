@@ -1,19 +1,13 @@
 #pragma once
 
-#include <memory>
+#include <utility>
 
 #include "AST.hpp"
 
-// TODO hide this implementation detail
 #include <llvm/IR/IRBuilder.h>
-
-// forward declaration
-namespace llvm {
-  class Value;
-  class Module;
-  class Function;
-  class ExecutionEngine;
-}
+#include <llvm/IR/TypeBuilder.h>
+#include <llvm/IR/Module.h>
+#include "llvm/Analysis/Verifier.h"
 
 namespace pegsolitaire {
   namespace codegen {
@@ -23,7 +17,7 @@ namespace pegsolitaire {
     class ProgramCodeGenerator;
 
     class ExpressionCodeGenerator : public boost::static_visitor<llvm::Value*> {
-      struct Impl;
+      struct Impl; // TODO no more needed to hide these details
       Impl* impl;
       friend class ProgramCodeGenerator;
 
@@ -37,6 +31,48 @@ namespace pegsolitaire {
       llvm::Value* operator()(std::shared_ptr<pegsolitaire::ast::Binary>) const;
       llvm::Value* operator()(std::shared_ptr<pegsolitaire::ast::Shift>) const;
       llvm::Value* operator()(const pegsolitaire::ast::Variable & v) const;
+    };
+
+    class ProgramCodeGenerator {
+    public:
+      ProgramCodeGenerator(llvm::Module*);
+
+      template<typename FType>
+      llvm::Function* generateFunction(const std::string & name,
+                                       std::initializer_list<ast::Variable> variables,
+                                       const ast::Expression & expression) {
+        using namespace pegsolitaire::ast;
+        using namespace llvm;
+        auto ft = TypeBuilder<FType, false>::get(m_module->getContext());
+        Function *f = Function::Create
+          (ft,
+           Function::ExternalLinkage,
+           "getNormalForm",
+           m_module);
+        auto argIt = f->arg_begin();
+        ExpressionCodeGenerator cg(m_module, m_builder);
+        for (auto & v : variables) {
+          assert(argIt != f->arg_end());
+          argIt->setName(v.internalName());
+          cg.setVariable(v, &*argIt);
+          argIt++;
+        }
+        assert(argIt == f->arg_end());
+        llvm::BasicBlock *bb = llvm::BasicBlock::Create
+          (m_module->getContext(),
+           "entry",
+           f);
+        m_builder.SetInsertPoint(bb);
+        auto retVal = boost::apply_visitor(cg, expression);
+        m_builder.CreateRet(retVal);
+        llvm::verifyFunction(*f);
+        // TODO in case of failure: remove from parent
+        return f;
+      }
+
+    private:
+      llvm::Module *m_module;
+      llvm::IRBuilder<> m_builder;
     };
 
   }

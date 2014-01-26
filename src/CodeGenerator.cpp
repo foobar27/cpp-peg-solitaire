@@ -19,6 +19,7 @@
 namespace pegsolitaire {
   namespace codegen {
     using namespace pegsolitaire::ast;
+    // TODO using namespace llvm?
 
     struct ExpressionCodeGenerator::Impl {
       llvm::IRBuilder<>& builder;
@@ -78,6 +79,12 @@ namespace pegsolitaire {
         throw std::runtime_error(std::string("variable ") + v.internalName() + " not defined!");
       return impl->variables[v];
     }
+
+    ProgramCodeGenerator::ProgramCodeGenerator(llvm::Module* module)
+      : m_module(module)
+      , m_builder(module->getContext())
+    {}
+
 
   }
 }
