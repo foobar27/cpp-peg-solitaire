@@ -47,7 +47,7 @@ namespace pegsolitaire {
         Function *f = Function::Create
           (ft,
            Function::ExternalLinkage,
-           "getNormalForm",
+           name,
            m_module);
         auto argIt = f->arg_begin();
         ExpressionCodeGenerator cg(m_module, m_builder);

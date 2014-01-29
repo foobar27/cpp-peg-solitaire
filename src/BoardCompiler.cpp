@@ -1,10 +1,12 @@
 #include "impl/BoardCompilerImpl.hpp"
 
 #include <initializer_list>
+#include <sstream>
 
 namespace pegsolitaire {
 
   using namespace std;
+  using namespace ast;
 
   ostream& operator<<(ostream& os, Field field) {
     switch (field) {
@@ -253,21 +255,27 @@ namespace pegsolitaire {
   }
 
   BoardCompiler::BoardCompiler(const vector<MoveDirection> & moveDirections, const Matrix<bool> & fields)
-    : m_moveDirections(moveDirections)
+    : m_module(new llvm::Module("pegsolitaire jit", llvm::getGlobalContext()))
+    , m_codegen(m_module)
+    , m_moveDirections(moveDirections)
     , m_population(populationCount(fields))
     , m_fields(fields)
     , m_lookupTable(buildLookupTable(m_fields))
     , m_masks(buildMoveMasks(fields, m_lookupTable, moveDirections))
   {
-    // for (auto & s : allSymmetries)
-    //   if (isTransformationValid(s))
-    //     m_symmetryFunctions = generateCode(transform(f));
+    int i = 0;
+    for (auto & s : allSymmetries) {
+      if (isTransformationValid(s)) {
+        stringstream fName;
+        fName << "applySymmetry" << i; // TODO encode real name of symmetry
+        Variable arg("arg");
+        auto f = m_codegen.generateFunction<uint64_t(uint64_t)>(fName.str(), {arg}, generateCode(transform(m_lookupTable, s, 0), arg));
+        f->dump();
+        m_symmetryFunctions.push_back(f);
+      }
+      ++i;
+    }
   }
-
-  BoardCompiler::BoardCompiler(const vector<MoveDirection> & moveDirections, const Matrix<bool> && fields)
-    : m_fields(fields)
-    , m_lookupTable(buildLookupTable(m_fields))
-  {}
 
   vector<int> BoardCompiler::computePermutations(const Matrix<int> & lookupTable) const {
     auto it = lookupTable.data().begin();
@@ -296,22 +304,25 @@ namespace pegsolitaire {
     return output;
   }
 
-  // Expression BoardCompiler::generateCode(const Matrix<int> & lookupTable, const Var & f) const {
-  //   auto mask = operations[diff];
-  //   Expression x = 0;
-  //   for (auto & op : calculateOperations(lookupTable))
-  //     x |= (f & mask) << diff;
-  //   return x;
-  // }
-  //
-  // Expression BoardCompiler::generateNormalForm(const Var & v) const {
-  //   Var n = f; // identity transformation
+  Expression BoardCompiler::generateCode(const Matrix<int> & lookupTable, const Variable & f) const {
+    auto operations = calculateOperations(lookupTable);
+    Expression x = boost::dynamic_bitset<>(); // TODO provide some kind of default initializer?
+    for (auto & p : operations) {
+      auto diff = p.first;
+      auto mask = p.second;
+      x = x | (f & mask) << diff; // TODO define operator |=
+    }
+    return x;
+  }
+
+  // Expression BoardCompiler::generateNormalForm(const Variable & v) const {
+  //   auto n = v; // identity transformation
   //   for (auto & f : m_symmetryFunctions)
   //     n = min(n, f(v));
   //   return n;
   // }
-  //
-  // Expression BoardCompiler::generateEquivalentFields(const Var & f, const Procedure<CompactBoard> & callback) const {
+
+  // Expression BoardCompiler::generateEquivalentFields(const Variable & f, const Procedure<CompactBoard> & callback) const {
   //   Expression result;
   //   for (auto & f : m_symmetryFunctions)
   //     result ,= callback(f(v));

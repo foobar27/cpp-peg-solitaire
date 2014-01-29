@@ -50,7 +50,7 @@ int main() {
   llvm::Module * module = new llvm::Module("pegsolitaire jit", llvm::getGlobalContext());
 
   pegsolitaire::codegen::ProgramCodeGenerator pcg(module);
-  auto f = pcg.generateFunction<uint64_t(uint64_t)>("getNormalForm", {arg}, expr);
+  auto f = pcg.generateFunction<uint64_t(uint64_t)>("someFunction", {arg}, expr);
 
   module->dump();
 
