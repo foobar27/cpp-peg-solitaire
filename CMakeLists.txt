@@ -17,6 +17,24 @@ IF (BUILD_SHARED_LIBS)
   SET (LIB_TYPE SHARED)
 ENDIF (BUILD_SHARED_LIBS)
 
+function(ps_add_library TARGET)
+  add_library(${TARGET} ${LIB_TYPE}
+    ${ARGN})
+  set_target_properties(${TARGET} PROPERTIES
+    COMPILE_FLAGS ${LLVM_CPPFLAGS}
+    LINK_FLAGS ${LLVM_LDFLAGS})
+endfunction()
+
+function(ps_add_executable TARGET)
+  add_executable(${TARGET} ${ARGN})
+  target_link_libraries(${TARGET}
+    PegSolitaire
+    ${LLVM_ALL_LIBS}
+    ${Boost_LIBRARIES})
+  set_target_properties(${TARGET} PROPERTIES
+    COMPILE_FLAGS ${LLVM_CPPFLAGS}
+    LINK_FLAGS ${LLVM_LDFLAGS})
+endfunction()
 
 if (PEGSOLITAIRE_BUILD_TESTS)
   enable_testing()
