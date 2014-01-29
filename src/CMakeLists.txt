@@ -1,7 +1,5 @@
 include (GenerateExportHeader)
 
-find_package(Boost 1.55.0 COMPONENTS system program_options filesystem unit_test_framework REQUIRED)
-
 add_compiler_export_flags(PegSolitaire_EXPORT_FLAGS)
 add_library(PegSolitaire ${LIB_TYPE}
 #  AST.cpp
@@ -25,8 +23,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(peg-solitaire main.cpp)
 target_link_libraries(peg-solitaire PegSolitaire)
-
-find_package(LLVM)
 
 # TODO integrate the following experiments into the main project
 add_executable(LlvmExperiments LlvmExperiments.cpp)

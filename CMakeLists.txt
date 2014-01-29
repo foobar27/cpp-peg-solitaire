@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.11.2)
 project(PegSolitaire)
 
+find_package(Boost 1.55.0 COMPONENTS system program_options filesystem unit_test_framework REQUIRED)
+find_package(LLVM)
+
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 add_definitions(-std=c++11 -Wall -pedantic)
