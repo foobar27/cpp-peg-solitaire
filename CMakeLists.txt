@@ -7,7 +7,6 @@ add_definitions(-std=c++11 -Wall -pedantic)
 
 option(PEGSOLITAIRE_BUILD_TESTS "Build the test suite" ON)
 option(PEGSOLITAIRE_BUILD_BENCHMARKS "Build the benchmarks" ON)
-option(PEGSOLITAIRE_USE_LLVM "Allow runtime code generation via LLVM." ON)
 
 OPTION (BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 SET (LIB_TYPE STATIC)

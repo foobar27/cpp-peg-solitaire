@@ -26,20 +26,17 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_executable(peg-solitaire main.cpp)
 target_link_libraries(peg-solitaire PegSolitaire)
 
-if (PEGSOLITAIRE_USE_LLVM)
 find_package(LLVM)
 
-  # TODO integrate the following experiments into the main project
-  add_executable(LlvmExperiments LlvmExperiments.cpp)
-  target_link_libraries(LlvmExperiments ${LLVM_ALL_LIBS})
-  set_target_properties(LlvmExperiments PROPERTIES
-    COMPILE_FLAGS ${LLVM_CPPFLAGS}
-    LINK_FLAGS ${LLVM_LDFLAGS})
+# TODO integrate the following experiments into the main project
+add_executable(LlvmExperiments LlvmExperiments.cpp)
+target_link_libraries(LlvmExperiments ${LLVM_ALL_LIBS})
+set_target_properties(LlvmExperiments PROPERTIES
+  COMPILE_FLAGS ${LLVM_CPPFLAGS}
+  LINK_FLAGS ${LLVM_LDFLAGS})
 
-  add_executable(BoostExperiments BoostExperiments.cpp AST.cpp CodeGenerator.cpp)
-  target_link_libraries(BoostExperiments ${LLVM_ALL_LIBS})
-  set_target_properties(BoostExperiments PROPERTIES
-    COMPILE_FLAGS ${LLVM_CPPFLAGS}
-    LINK_FLAGS ${LLVM_LDFLAGS})
-
-endif ()
+add_executable(BoostExperiments BoostExperiments.cpp AST.cpp CodeGenerator.cpp)
+target_link_libraries(BoostExperiments ${LLVM_ALL_LIBS})
+set_target_properties(BoostExperiments PROPERTIES
+  COMPILE_FLAGS ${LLVM_CPPFLAGS}
+  LINK_FLAGS ${LLVM_LDFLAGS})
