@@ -2,10 +2,11 @@ include (GenerateExportHeader)
 
 add_compiler_export_flags(PegSolitaire_EXPORT_FLAGS)
 ps_add_library(PegSolitaire ${LIB_TYPE}
-#  AST.cpp
   Board.cpp
   BoardIO.cpp
   BoardCompiler.cpp
+  AST.cpp
+  CodeGenerator.cpp
   )
 
 set_target_properties(PegSolitaire PROPERTIES
@@ -25,4 +26,4 @@ target_link_libraries(peg-solitaire PegSolitaire)
 
 # TODO integrate the following experiments into the main project
 ps_add_executable(LlvmExperiments LlvmExperiments.cpp)
-ps_add_executable(BoostExperiments BoostExperiments.cpp AST.cpp CodeGenerator.cpp)
+ps_add_executable(BoostExperiments BoostExperiments.cpp)
