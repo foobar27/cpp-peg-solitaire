@@ -1,8 +1,8 @@
 #include <llvm/Pass.h>
 #include <llvm/PassManager.h>
 #include <llvm/ADT/SmallVector.h>
-#include <llvm/Analysis/Verifier.h>
-#include <llvm/Assembly/PrintModulePass.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/IR/IRPrintingPasses.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/Constants.h>

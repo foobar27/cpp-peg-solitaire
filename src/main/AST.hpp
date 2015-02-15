@@ -52,7 +52,7 @@ namespace pegsolitaire {
     std::shared_ptr<Binary> operator&(const Expression &, const Expression &);
     std::shared_ptr<Binary> operator|(const Expression &, const Expression &);
     std::shared_ptr<Shift> operator<<(const Expression &, int);
-    //    std::shared_ptr<Binary> min(const Expression & left, const Expression & right);
+    std::shared_ptr<Binary> min(const Expression & left, const Expression & right);
 
   }
 
