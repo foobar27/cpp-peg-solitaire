@@ -52,5 +52,10 @@ int main() {
 
     module->dump();
 
+    ExecutionEngine * executionEngine = EngineBuilder(module).create();
+    void * ptr = executionEngine->getPointerToFunction(f);
+    auto fp = reinterpret_cast<uint64_t(*)(uint64_t)>(ptr);
+    fp(2ul);
+
     return 0;
 }

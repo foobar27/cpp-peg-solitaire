@@ -60,7 +60,7 @@ public:
     }
 
     template<class Ret, class... Types>
-    llvm::Value* operator()(const pegsolitaire::ast::Function<Ret, Types...> & function) {
+    llvm::Function* operator()(const pegsolitaire::ast::Function<Ret, Types...> & function) {
         // TODO check if the given function has already been generated
         using namespace pegsolitaire::ast;
         using namespace llvm;
