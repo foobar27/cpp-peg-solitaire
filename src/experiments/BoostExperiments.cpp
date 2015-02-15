@@ -39,20 +39,20 @@ using namespace pegsolitaire::ast;
 //                           (ast::Expression, right))
 
 boost::dynamic_bitset<> operator"" _b(unsigned long long n) {
-  return boost::dynamic_bitset<>(64, n);
+    return boost::dynamic_bitset<>(64, n);
 }
 
 int main() {
-  // TODO improve the following syntax with boost::proto?
-  Variable arg("arg");
-  Expression expr = 3_b | Expression(42_b) & arg;
+    // TODO improve the following syntax with boost::proto?
+    Variable arg("arg");
+    Expression expr = 3_b | Expression(42_b) & arg;
 
-  llvm::Module * module = new llvm::Module("pegsolitaire jit", llvm::getGlobalContext());
+    llvm::Module * module = new llvm::Module("pegsolitaire jit", llvm::getGlobalContext());
 
-  pegsolitaire::codegen::ProgramCodeGenerator pcg(module);
-  auto f = pcg.generateFunction<uint64_t(uint64_t)>("someFunction", {arg}, expr);
+    pegsolitaire::codegen::ProgramCodeGenerator pcg(module);
+    auto f = pcg.generateFunction<uint64_t(uint64_t)>("someFunction", {arg}, expr);
 
-  module->dump();
+    module->dump();
 
-  return 0;
+    return 0;
 }

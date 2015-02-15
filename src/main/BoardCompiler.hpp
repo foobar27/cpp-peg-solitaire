@@ -9,15 +9,15 @@
 
 namespace pegsolitaire {
 
-  using Coordinates = std::pair<int, int>;
-  using Symmetry = std::function<Coordinates(const Coordinates & bounds, const Coordinates & p)>;
+using Coordinates = std::pair<int, int>;
+using Symmetry = std::function<Coordinates(const Coordinates & bounds, const Coordinates & p)>;
 
-  enum class Field { BLOCKED = -1, EMPTY = 0, OCCUPIED = 1};
+enum class Field { BLOCKED = -1, EMPTY = 0, OCCUPIED = 1};
 
-  std::ostream& operator<<(std::ostream& os, Field field);
+std::ostream& operator<<(std::ostream& os, Field field);
 
-  class PEGSOLITAIRE_EXPORT BoardCompiler {
-  public:
+class PEGSOLITAIRE_EXPORT BoardCompiler {
+public:
     BoardCompiler(const std::vector<MoveDirection> & moveDirections, const Matrix<bool> & fields);
     BoardCompiler(const std::vector<MoveDirection> & moveDirections, const Matrix<bool> && fields) = delete;
 
@@ -31,7 +31,7 @@ namespace pegsolitaire {
     ast::Expression generateNormalForm(const ast::Variable & v) const;
     //    ast::Expression generateEquivalentFields(const ast::Variable & f, const Procedure<CompactBoard> & callback) const;
 
-  private:
+private:
 
     std::vector<int> computePermutations(const Matrix<int> & lookupTable) const;
     // TODO rename to something useful: moveOperations, checkOperations?
@@ -46,6 +46,6 @@ namespace pegsolitaire {
     Matrix<int> m_lookupTable;
     std::vector<Masks> m_masks;
     std::vector<llvm::Function*> m_symmetryFunctions;
-  };
+};
 
 }

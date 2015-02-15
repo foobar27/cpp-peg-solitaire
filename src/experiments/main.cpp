@@ -9,8 +9,8 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-  string line { "hello w\torld"};
-  line.erase(remove_if(line.begin(), line.end(), [](char c) { return isspace(c, locale()); }), line.end());
-  cout << line << endl;
-  return 0;
+    string line { "hello w\torld"};
+    line.erase(remove_if(line.begin(), line.end(), [](char c) { return isspace(c, locale()); }), line.end());
+    cout << line << endl;
+    return 0;
 }
