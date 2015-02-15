@@ -255,9 +255,7 @@ vector<Masks> buildMoveMasks(const Matrix<bool> & board, const Matrix<int> & loo
 }
 
 BoardCompiler::BoardCompiler(const vector<MoveDirection> & moveDirections, const Matrix<bool> & fields)
-    : m_module(new llvm::Module("pegsolitaire jit", llvm::getGlobalContext()))
-    , m_codegen(m_module)
-    , m_moveDirections(moveDirections)
+    : m_moveDirections(moveDirections)
     , m_population(populationCount(fields))
     , m_fields(fields)
     , m_lookupTable(buildLookupTable(m_fields))
@@ -268,10 +266,7 @@ BoardCompiler::BoardCompiler(const vector<MoveDirection> & moveDirections, const
         if (isTransformationValid(s)) {
             stringstream fName;
             fName << "applySymmetry" << i; // TODO encode real name of symmetry
-            Variable arg("arg");
-            auto f = m_codegen.generateFunction<uint64_t(uint64_t)>(fName.str(), {arg}, generateCode(transform(m_lookupTable, s, 0), arg));
-            f->dump();
-            m_symmetryFunctions.push_back(f);
+            m_symmetryFunctions.push_back(generateSymmetryFunction(transform(m_lookupTable, s, 0)));
         }
         ++i;
     }
@@ -304,29 +299,31 @@ map<int, CompactBoard> BoardCompiler::calculateOperations(const Matrix<int> & lo
     return output;
 }
 
-Expression BoardCompiler::generateCode(const Matrix<int> & lookupTable, const Variable & f) const {
+Function<unsigned long, unsigned long> BoardCompiler::generateSymmetryFunction(const Matrix<int> & lookupTable) const {
+    using E = Expression<unsigned long>;
+    Variable<unsigned long> arg {"arg"};
     auto operations = calculateOperations(lookupTable);
-    Expression x = boost::dynamic_bitset<>(); // TODO provide some kind of default initializer?
+    E x = Constant<unsigned long>();
     for (auto & p : operations) {
-        auto diff = p.first;
-        auto mask = p.second;
-        x = x | (f & mask) << diff; // TODO define operator |=
+        int diff = p.first;
+        E mask = p.second.to_ulong();
+        x = x | (arg & mask) << diff; // TODO define operator |=
     }
-    return x;
+    return {"symmetry", x, arg};
 }
 
-// Expression BoardCompiler::generateNormalForm(const Variable & v) const {
-//   auto n = v; // identity transformation
-//   for (auto & f : m_symmetryFunctions)
-//     n = min(n, f(v));
-//   return n;
-// }
+//Expression<CompactBoard> BoardCompiler::generateNormalForm(const Variable & v) const {
+//    auto n = v; // identity transformation
+//    for (auto & f : m_symmetryFunctions)
+//        n = min(n, f(v));
+//    return n;
+//}
 
-// Expression BoardCompiler::generateEquivalentFields(const Variable & f, const Procedure<CompactBoard> & callback) const {
-//   Expression result;
-//   for (auto & f : m_symmetryFunctions)
-//     result ,= callback(f(v));
-//   return result;
-// }
+//Expression<CompactBoard> BoardCompiler::generateEquivalentFields(const Variable & f, const Procedure<CompactBoard> & callback) const {
+//    Expression result;
+//    for (auto & f : m_symmetryFunctions)
+//        result ,= callback(f(v));
+//    return result;
+//}
 
 }

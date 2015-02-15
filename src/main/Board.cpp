@@ -26,7 +26,6 @@ Masks::Masks(int size)
     : moveMask(size, 0)
     , checkMask1(size, 0)
     , checkMask2(size, 0)
-{
-}
+{}
 
 }

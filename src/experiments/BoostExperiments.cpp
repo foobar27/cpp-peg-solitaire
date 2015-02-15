@@ -31,26 +31,24 @@
 
 #include "CodeGenerator.hpp"
 
-using namespace pegsolitaire::ast;
-
-// BOOST_FUSION_ADAPT_STRUCT(ast::Binary,
-//                           (ast::Operator, op)
-//                           (ast::Expression, left )
-//                           (ast::Expression, right))
-
-boost::dynamic_bitset<> operator"" _b(unsigned long long n) {
-    return boost::dynamic_bitset<>(64, n);
-}
 
 int main() {
+    using namespace llvm;
+    using namespace pegsolitaire::ast;
+    using pegsolitaire::ast::Constant;
+
     // TODO improve the following syntax with boost::proto?
-    Variable arg("arg");
-    Expression expr = 3_b | Expression(42_b) & arg;
+    Variable<unsigned long> arg("arg");
+    Expression<unsigned long> expr = Constant<unsigned long>(3ul) | Constant<unsigned long>(42ul) & arg;
+    pegsolitaire::ast::Function<unsigned long, unsigned long> function {"some_function", expr, arg};
 
-    llvm::Module * module = new llvm::Module("pegsolitaire jit", llvm::getGlobalContext());
+    Module * module = new Module("pegsolitaire jit", getGlobalContext());
 
-    pegsolitaire::codegen::ProgramCodeGenerator pcg(module);
-    auto f = pcg.generateFunction<uint64_t(uint64_t)>("someFunction", {arg}, expr);
+    IRBuilder<> builder(getGlobalContext());
+
+    pegsolitaire::codegen::CodeGenerator cg(module, builder);
+
+    auto f = cg(function);
 
     module->dump();
 

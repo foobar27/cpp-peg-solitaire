@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <initializer_list>
 
 #include "AST.hpp"
 
@@ -14,65 +15,98 @@ namespace codegen {
 
 // TODO handle (or remove) the case where the generation returns nullptr
 
-class ProgramCodeGenerator;
-
-class ExpressionCodeGenerator : public boost::static_visitor<llvm::Value*> {
-    struct Impl; // TODO no more needed to hide these details
-    Impl* impl;
-    friend class ProgramCodeGenerator;
-
+class CodeGenerator : public boost::static_visitor<llvm::Value*> {
 public:
-    ExpressionCodeGenerator(llvm::Module *mod, llvm::IRBuilder<>& builder);
-    ~ExpressionCodeGenerator();
+    CodeGenerator(llvm::Module *mod, llvm::IRBuilder<> & builder);
 
-    void setVariable(const pegsolitaire::ast::Variable & x, llvm::Value*);
+    template<class Type>
+    llvm::Value* operator()(const pegsolitaire::ast::Constant<Type> & c) {
+        using namespace llvm;
+        auto t = TypeBuilder<Type, false>::get(m_module->getContext());
+        return ConstantInt::get(m_module->getContext(), llvm::APInt(64, c.value())); // TODO hardcoded bit-width!
+    }
 
-    llvm::Value* operator()(const boost::dynamic_bitset<> &) const;
-    llvm::Value* operator()(std::shared_ptr<pegsolitaire::ast::Binary>) const;
-    llvm::Value* operator()(std::shared_ptr<pegsolitaire::ast::Shift>) const;
-    llvm::Value* operator()(const pegsolitaire::ast::Variable & v) const;
-};
+    template<class Type>
+    llvm::Value* operator()(const pegsolitaire::ast::Binary<Type> & node) {
+        auto left = boost::apply_visitor(*this, node.left);
+        auto right = boost::apply_visitor(*this, node.right);
+        if (!left || !right)
+            return nullptr;
+        switch (node.op) {
+        case ast::Operator::AND:
+            return m_builder.CreateAnd(left, right);
+        case ast::Operator::OR:
+            return m_builder.CreateOr(left, right);
+        }
+        throw std::runtime_error {std::string("unknown operator: ") + static_cast<char>(node.op) };
+    }
 
-class ProgramCodeGenerator {
-public:
-    ProgramCodeGenerator(llvm::Module*);
+    template<class Type>
+    llvm::Value* operator()(const pegsolitaire::ast::Shift<Type> & node) {
+        auto x = boost::apply_visitor(*this, node.x);
+        if (!x)
+            return nullptr;
+        if (node.numberOfBits > 0)
+            return m_builder.CreateShl(x, node.numberOfBits);
+        else
+            return m_builder.CreateLShr(x, node.numberOfBits);
+    }
 
-    template<typename FType>
-    llvm::Function* generateFunction(const std::string & name,
-                                     std::initializer_list<ast::Variable> variables,
-                                     const ast::Expression & expression) {
+    template<class Type>
+    llvm::Value* operator()(const pegsolitaire::ast::Variable<Type> & v) {
+        if (m_variables.find(v) == m_variables.end())
+            throw std::runtime_error(std::string("variable ") + v.internalName() + " not defined!");
+        return m_variables.at(v);
+    }
+
+    template<class Ret, class... Types>
+    llvm::Value* operator()(const pegsolitaire::ast::Function<Ret, Types...> & function) {
+        // TODO check if the given function has already been generated
         using namespace pegsolitaire::ast;
         using namespace llvm;
-        auto ft = TypeBuilder<FType, false>::get(m_module->getContext());
-        Function *f = Function::Create
-                (ft,
-                 Function::ExternalLinkage,
-                 name,
-                 m_module);
+
+        auto ft = TypeBuilder<Ret(Types...), false>::get(m_module->getContext());
+        llvm::Function * f = llvm::Function::Create(
+                    ft,
+                    llvm::Function::ExternalLinkage,
+                    function.internalName(),
+                    m_module);
+        BasicBlock * bb = BasicBlock::Create(
+                    m_module->getContext(),
+                    "entry",
+                    f);
+        m_builder.SetInsertPoint(bb);
+
         auto argIt = f->arg_begin();
-        ExpressionCodeGenerator cg(m_module, m_builder);
-        for (auto & v : variables) {
+        for (auto & v : function.args()) {
             assert(argIt != f->arg_end());
-            argIt->setName(v.internalName());
-            cg.setVariable(v, &*argIt);
+            argIt->setName(v.originalName());
+            addVariable(v, &*argIt);
             argIt++;
         }
         assert(argIt == f->arg_end());
-        llvm::BasicBlock *bb = llvm::BasicBlock::Create
-                (m_module->getContext(),
-                 "entry",
-                 f);
-        m_builder.SetInsertPoint(bb);
-        auto retVal = boost::apply_visitor(cg, expression);
+
+        // this has been done *after* the variables have been registered!
+        auto body = function.body();
+        auto retVal = boost::apply_visitor(*this, body);
+
         m_builder.CreateRet(retVal);
-        llvm::verifyFunction(*f);
-        // TODO in case of failure: remove from parent
+        verifyFunction(*f);
         return f;
     }
 
+    template<class Ret>
+    llvm::Value* operator()(const pegsolitaire::ast::Call<Ret> & call) {
+        return nullptr; // TODO please implement!
+    }
+
 private:
-    llvm::Module *m_module;
-    llvm::IRBuilder<> m_builder;
+    void addVariable(pegsolitaire::ast::UntypedVariable x, llvm::Value*);
+
+    llvm::IRBuilder<> & m_builder;
+    llvm::Module * m_module; // TODO garbage collected?
+    std::map<ast::UntypedVariable, llvm::Value*> m_variables; // TODO garbage collected?
+
 };
 
 }

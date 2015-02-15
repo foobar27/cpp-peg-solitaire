@@ -2,8 +2,6 @@
 
 #include "Board.hpp"
 #include "AST.hpp"
-#include "CodeGenerator.hpp"
-
 #include <map>
 #include <utility>
 
@@ -27,8 +25,7 @@ public:
     int population() const { return m_population; }
 
     bool isTransformationValid(const Symmetry &) const;
-    ast::Expression generateCode(const Matrix<int> & lookupTable, const ast::Variable & f) const;
-    ast::Expression generateNormalForm(const ast::Variable & v) const;
+    ast::Expression<CompactBoard> generateNormalForm(const ast::Variable<CompactBoard> & v) const;
     //    ast::Expression generateEquivalentFields(const ast::Variable & f, const Procedure<CompactBoard> & callback) const;
 
 private:
@@ -36,16 +33,14 @@ private:
     std::vector<int> computePermutations(const Matrix<int> & lookupTable) const;
     // TODO rename to something useful: moveOperations, checkOperations?
     std::map<int, CompactBoard> calculateOperations(const Matrix<int> & lookupTable) const;
-
-    llvm::Module* m_module;
-    codegen::ProgramCodeGenerator m_codegen;
+    ast::Function<unsigned long, unsigned long> generateSymmetryFunction(const Matrix<int> & lookupTable) const;
 
     std::vector<MoveDirection> m_moveDirections;
     int m_population;
     Matrix<bool> m_fields;
     Matrix<int> m_lookupTable;
     std::vector<Masks> m_masks;
-    std::vector<llvm::Function*> m_symmetryFunctions;
+    std::vector<ast::Function<unsigned long, unsigned long>> m_symmetryFunctions;
 };
 
 }

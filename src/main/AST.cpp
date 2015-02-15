@@ -6,20 +6,44 @@
 namespace pegsolitaire {
 namespace ast {
 
-static std::atomic<VariableIndex> nextVariableIndex {0};
+static std::atomic<Index> nextIndex {0};
 
-Variable::Variable(const std::string & originalName)
-    : m_index(nextVariableIndex++)
-    , m_originalName(originalName)
+Index getNextIndex() {
+    return nextIndex++;
+}
+
+Indexed::Indexed()
+    : m_index(getNextIndex())
 {}
 
-std::string Variable::originalName() const {
+Indexed::Indexed(Index index)
+    : m_index(index)
+{}
+
+Index Indexed::index() const {
+    return m_index;
+}
+
+Named::Named(std::string originalName)
+    : m_originalName(originalName)
+{}
+
+std::string Named::originalName() const {
     return m_originalName;
 }
 
-std::string Variable::internalName() const {
+NamedAndIndexed::NamedAndIndexed(const std::string & originalName)
+    : Named(originalName)
+{}
+
+NamedAndIndexed::NamedAndIndexed(const std::string & originalName, Index index)
+    : Named(originalName)
+    , Indexed(index)
+{}
+
+std::string NamedAndIndexed::internalName() const {
     std::stringstream ss;
-    ss << m_originalName << "_" << m_index;
+    ss << originalName() << "_" << index();
     return ss.str();
 }
 
@@ -28,28 +52,14 @@ std::ostream& operator<<(std::ostream& os, const Operator& op) {
     return os;
 }
 
-Binary::Binary(Operator op, const Expression & left, const Expression & right)
-    : op(op)
-    , left(left)
-    , right(right)
+UntypedVariable::UntypedVariable(const std::string & originalName)
+    : NamedAndIndexed(originalName)
 {}
 
-Shift::Shift(const Expression & x, int numberOfBits)
-    : x(x)
-    , numberOfBits(numberOfBits)
+UntypedVariable::UntypedVariable(const std::string & originalName, Index index)
+    : NamedAndIndexed(originalName, index)
 {}
 
-std::shared_ptr<Binary> operator&(const Expression & left, const Expression & right) {
-    return std::shared_ptr<Binary>(new Binary(Operator::AND, left, right));
-}
-
-std::shared_ptr<Binary> operator|(const Expression & left, const Expression & right) {
-    return std::shared_ptr<Binary>(new Binary(Operator::OR, left, right));
-}
-
-std::shared_ptr<Shift> operator<<(const Expression & x, int numberOfBits) {
-    return std::shared_ptr<Shift>(new Shift(x, numberOfBits));
-}
 
 }
 }
