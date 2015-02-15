@@ -223,7 +223,7 @@ public:
     }
 
     operator UntypedFunction<Ret>() const {
-        return {originalName(), body};
+        return {originalName(), m_body};
     }
 
 private:
