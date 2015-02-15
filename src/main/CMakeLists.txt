@@ -20,7 +20,7 @@ target_compile_options(PegSolitaire PUBLIC
     ${LLVM_DEFINITIONS}
     ${LLVM_LDFLAGS})
 
-llvm_map_components_to_libnames(LLVM_LIBS support core jit)
+llvm_map_components_to_libnames(LLVM_LIBS support core jit x86codegen)
 
 target_link_libraries(PegSolitaire PUBLIC
     ${LLVM_LIBS})

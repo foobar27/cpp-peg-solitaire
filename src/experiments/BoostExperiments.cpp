@@ -28,6 +28,7 @@
 #include <typeinfo>
 #include <utility>
 #include <cstdint>
+#include <iostream>
 
 #include "CodeGenerator.hpp"
 
@@ -37,7 +38,8 @@ int main() {
     using namespace pegsolitaire::ast;
     using pegsolitaire::ast::Constant;
 
-    // TODO improve the following syntax with boost::proto?
+    InitializeNativeTarget();
+
     Variable<unsigned long> arg("arg");
     Expression<unsigned long> expr = Constant<unsigned long>(3ul) | Constant<unsigned long>(42ul) & arg;
     pegsolitaire::ast::Function<unsigned long, unsigned long> function {"some_function", expr, arg};
@@ -55,7 +57,7 @@ int main() {
     ExecutionEngine * executionEngine = EngineBuilder(module).create();
     void * ptr = executionEngine->getPointerToFunction(f);
     auto fp = reinterpret_cast<uint64_t(*)(uint64_t)>(ptr);
-    fp(2ul);
+    std::cout << "result=" << fp(2ul) << std::endl;
 
     return 0;
 }
