@@ -6,6 +6,9 @@ endif()
 if(PEGSOLITAIRE_BUILD_EXPERIMENTS)
     add_subdirectory(experiments)
 endif()
+if(PEGSOLITAIRE_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()
 
 # include (GenerateExportHeader)
 

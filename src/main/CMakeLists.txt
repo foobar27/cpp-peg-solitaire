@@ -1,6 +1,6 @@
 include (GenerateExportHeader)
 
-find_package(Boost 1.57.0 COMPONENTS system program_options filesystem unit_test_framework REQUIRED)
+find_package(Boost 1.57.0 COMPONENTS system REQUIRED)
 find_package(LLVM)
 
 file(GLOB_RECURSE SOURCES *.hpp *.cpp)

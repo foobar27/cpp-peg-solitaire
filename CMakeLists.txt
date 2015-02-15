@@ -6,6 +6,7 @@ cmake_policy(SET CMP0022 NEW)
 #set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 option(PEGSOLITAIRE_BUILD_TESTS "Build the test suite" ON)
+option(PEGSOLITAIRE_BUILD_BENCHMARKS "Build the experiments" ON)
 option(PEGSOLITAIRE_BUILD_EXPERIMENTS "Build the experiments" ON)
 
 if (PEGSOLITAIRE_BUILD_TESTS)
