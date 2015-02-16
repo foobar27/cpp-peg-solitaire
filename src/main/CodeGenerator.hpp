@@ -51,10 +51,12 @@ public:
         auto x = boost::apply_visitor(*this, node.x);
         if (!x)
             return nullptr;
-        if (node.numberOfBits > 0)
+        if (node.numberOfBits == 0)
+            return x;
+        else if (node.numberOfBits > 0)
             return m_builder.CreateShl(x, node.numberOfBits);
         else
-            return m_builder.CreateShr(x, node.numberOfBits);
+            return m_builder.CreateAShr(x, -node.numberOfBits);
     }
 
     template<class Type>
