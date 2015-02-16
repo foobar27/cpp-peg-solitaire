@@ -9,3 +9,7 @@ add_test(HashSetTest HashSetTest)
 add_executable(PegSolitaireTest PegSolitaireTest.cpp)
 target_link_libraries(PegSolitaireTest PegSolitaire ${Boost_LIBRARIES})
 add_test(PegSolitaireTest PegSolitaireTest)
+
+add_executable(CodeGenerationTest CodeGenerationTest.cpp)
+target_link_libraries(CodeGenerationTest PegSolitaire ${Boost_LIBRARIES})
+add_test(CodeGenerationTest CodeGenerationTest)
