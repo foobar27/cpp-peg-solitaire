@@ -22,7 +22,7 @@ public:
     template<class Type>
     llvm::Value* operator()(const pegsolitaire::ast::Constant<Type> & c) {
         using namespace llvm;
-        auto t = TypeBuilder<Type, false>::get(m_module->getContext());
+        //auto t = TypeBuilder<Type, false>::get(m_module->getContext());
         return ConstantInt::get(m_module->getContext(), llvm::APInt(64, c.value())); // TODO hardcoded bit-width!
     }
 
@@ -54,7 +54,7 @@ public:
         if (node.numberOfBits > 0)
             return m_builder.CreateShl(x, node.numberOfBits);
         else
-            return m_builder.CreateLShr(x, node.numberOfBits);
+            return m_builder.CreateShr(x, node.numberOfBits);
     }
 
     template<class Type>
