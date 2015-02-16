@@ -11,7 +11,7 @@
 namespace pegsolitaire {
 namespace ast {
 
-enum class Operator : char { AND = '&', OR = '|' };
+enum class Operator : char { AND = '&', OR = '|', MIN = 'm' };
 std::ostream& operator<<(std::ostream& os, const Operator& op);
 
 using Index = long;
@@ -287,15 +287,16 @@ Binary<typename expression_type<Left>::type> operator|(const Left & left, const 
     return makeOperator(Operator::OR, left, right);
 }
 
+template<class Left, class Right>
+Binary<typename expression_type<Left>::type> min(const Left & left, const Right & right) {
+    return makeOperator(Operator::MIN, left, right);
+}
+
 template<class ExpressionType>
 Shift<typename expression_type<ExpressionType>::type> operator<<(const ExpressionType & x, int numberOfBits) {
     static_assert(is_expression<ExpressionType>::value, "ExpressionType must be an expression");
     return { x, numberOfBits };
 }
 
-template<class Type>
-Binary<Type> min(const Expression<Type> & left, const Expression<Type> & right);
-
 }
-
 }

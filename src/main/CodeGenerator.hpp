@@ -37,6 +37,11 @@ public:
             return m_builder.CreateAnd(left, right);
         case ast::Operator::OR:
             return m_builder.CreateOr(left, right);
+        case ast::Operator::MIN: {
+            // TODO how do we know it's unsigned? => type system!
+            llvm::Value* tmp = m_builder.CreateICmpULT(left, right);
+            return m_builder.CreateSelect(tmp, left, right);
+            }
         }
         throw std::runtime_error {std::string("unknown operator: ") + static_cast<char>(node.op) };
     }

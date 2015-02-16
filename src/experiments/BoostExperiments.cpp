@@ -41,7 +41,7 @@ int main() {
     InitializeNativeTarget();
 
     Variable<unsigned long> arg("arg");
-    Expression<unsigned long> expr = Constant<unsigned long>(3ul) | Constant<unsigned long>(42ul) & arg;
+    Expression<unsigned long> expr = min(Constant<unsigned long>(1ul), Constant<unsigned long>(3ul) | Constant<unsigned long>(42ul) & arg);
     pegsolitaire::ast::Function<unsigned long, unsigned long> function {"some_function", expr, arg};
 
     Module * module = new Module("pegsolitaire jit", getGlobalContext());
