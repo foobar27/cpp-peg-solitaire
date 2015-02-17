@@ -312,12 +312,14 @@ Function<unsigned long, unsigned long> BoardCompiler::generateSymmetryFunction(c
     return {"symmetry", x, arg};
 }
 
-//Expression<CompactBoard> BoardCompiler::generateNormalForm(const Variable & v) const {
-//    auto n = v; // identity transformation
-//    for (auto & f : m_symmetryFunctions)
-//        n = min(n, f(v));
-//    return n;
-//}
+Function<unsigned long, unsigned long> BoardCompiler::generateNormalForm() const {
+    using E = Expression<unsigned long>;
+    Variable<unsigned long> arg {"arg"};
+    E x = arg; // identity transformation
+    for (auto & f : m_symmetryFunctions)
+        x = min(x, f(arg));
+    return {"normalForm", x, arg};
+}
 
 //Expression<CompactBoard> BoardCompiler::generateEquivalentFields(const Variable & f, const Procedure<CompactBoard> & callback) const {
 //    Expression result;

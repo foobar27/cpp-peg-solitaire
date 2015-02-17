@@ -92,39 +92,11 @@ public:
     }
 };
 
-template<class Ret>
-class UntypedFunction : public NamedAndIndexed
-{
-    UntypedFunction(const std::string & originalName)
-        : NamedAndIndexed(originalName)
-    {}
-};
-
 template<class Ret, class... Types>
 class Function;
 
 template<class Ret>
-class Call {
-public:
-    template<class... Types>
-    Call(Function<Ret, Types...> f, Variable<Types>... args)
-        : m_function(f)
-    {
-        addAllArgs(args...);
-    }
-
-private:
-    void addAllArgs() {}
-
-    template<class Type, class... Types>
-    void addAllArgs(Variable<Type> arg, Variable<Types>... args) {
-        m_args.push_back(arg);
-        addAllArgs(args...);
-    }
-
-    UntypedFunction<Ret> m_function;
-    std::vector<UntypedVariable> m_args;
-};
+class Call;
 
 template<class Type>
 struct Binary;
@@ -138,7 +110,7 @@ using Expression = boost::variant
    boost::recursive_wrapper<Binary<Type>>,
    boost::recursive_wrapper<Shift<Type>>,
    Variable<Type>,
-   Call<Type>
+   boost::recursive_wrapper<Call<Type>>
   >;
 
 template<class T>
@@ -197,10 +169,47 @@ struct expression_type<Call<Type>> {
     using type = Type;
 };
 
+template<class Ret>
+class UntypedFunction;
+
+template<class Ret>
+class Call {
+public:
+    template<class... Types>
+    Call(Function<Ret, Types...> f, Variable<Types>... args)
+        : m_function(f)
+    {
+        addAllArgs(args...);
+    }
+
+private:
+    void addAllArgs() {}
+
+    template<class Type, class... Types>
+    void addAllArgs(Variable<Type> arg, Variable<Types>... args) {
+        m_args.push_back(arg);
+        addAllArgs(args...);
+    }
+
+    UntypedFunction<Ret> m_function;
+    std::vector<UntypedVariable> m_args;
+};
+
+template<class Ret>
+class UntypedFunction : public NamedAndIndexed
+{
+public:
+    UntypedFunction(const std::string & originalName, const Expression<Ret> & expression)
+        : NamedAndIndexed(originalName)
+        , m_expression(expression)
+    {}
+private:
+    Expression<Ret> m_expression;
+};
+
 template<class Ret, class... Types>
 class Function : public NamedAndIndexed {
 public:
-    using self = Function<Ret, Types...>;
 
     Function(const std::string name, Expression<Ret> body, Variable<Types>... args)
         : NamedAndIndexed(name)
@@ -210,7 +219,7 @@ public:
     }
 
     template<class... Args>
-    Call<Ret> operator()(Args... args) {
+    Call<Ret> operator()(Args... args) const {
         return { *this, args... };
     }
 

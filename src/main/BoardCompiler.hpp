@@ -25,8 +25,8 @@ public:
     int population() const { return m_population; }
 
     bool isTransformationValid(const Symmetry &) const;
-    ast::Expression<CompactBoard> generateNormalForm(const ast::Variable<CompactBoard> & v) const;
-    //    ast::Expression generateEquivalentFields(const ast::Variable & f, const Procedure<CompactBoard> & callback) const;
+    ast::Function<unsigned long, unsigned long> generateNormalForm() const;
+    //ast::Function<unsigned long, unsigned long> generateEquivalentFields(const Procedure<CompactBoard> & callback) const;
 
 private:
 
